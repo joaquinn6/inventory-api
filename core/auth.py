@@ -31,12 +31,12 @@ class AuthService():
   def get_user(self, email: str) -> dict:
     return mongo_provider.db.users.find_one({'email': email})
 
-  def authenticate_user(self, email: str, password: str) -> UserBase:
+  def authenticate_user(self, email: str, password: str) -> UserBase | None:
     user = self.get_user(email)
     if not user:
-      return False
+      return None
     if not self.verify_password(password, user['password']):
-      return False
+      return None
     return UserBase(**user)
 
   def create_access_token(self, data: dict) -> str:
@@ -61,7 +61,7 @@ class AuthService():
         }
         }
     )
-    return Token(token=f"Bearer {token_str}", email=user.email, roles=user.email)
+    return Token(token=f"Bearer {token_str}", email=user.email, roles=user.roles)
 
   def get_content_token(self, token: str) -> dict:
     try:
@@ -125,7 +125,6 @@ class AuthService():
 
 class OptionalHTTPBearer(HTTPBearer):
   async def __call__(self, request: Request) -> Optional[str]:
-    from fastapi import status
     try:
       r = await super().__call__(request)
       token = r.credentials

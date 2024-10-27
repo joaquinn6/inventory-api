@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import HTTPException, Request, status, Header
+from fastapi import HTTPException, Request, status
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 
 from jose import JWTError, jwt
@@ -9,7 +9,8 @@ from passlib.context import CryptContext
 
 from core.var_env import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 import core.var_mongo_provider as mongo_provider
-
+from models.user_model import UserBase
+from models.token_model import Token
 ALGORITHM = "HS256"
 
 
@@ -21,31 +22,31 @@ class AuthService():
   def __init__(self) -> None:
     pass
 
-  def verify_password(self, plain_password, password):
+  def verify_password(self, plain_password, password) -> bool:
     return pwd_context.verify(plain_password, password)
 
-  def get_password_hash(self, password):
+  def get_password_hash(self, password) -> str:
     return pwd_context.hash(password)
 
-  def get_user(self, email: str):
+  def get_user(self, email: str) -> dict:
     return mongo_provider.db.users.find_one({'email': email})
 
-  def authenticate_user(self, email: str, password: str):
+  def authenticate_user(self, email: str, password: str) -> UserBase:
     user = self.get_user(email)
     if not user:
       return False
     if not self.verify_password(password, user['password']):
       return False
-    return user
+    return UserBase(**user)
 
-  def create_access_token(self, data: dict):
+  def create_access_token(self, data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode['expire'] = expire.strftime("%Y-%m-%dT%H:%M:%S.%f")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-  def generate_token(self, email, password):
+  def generate_token(self, email, password) -> Token:
     user = self.authenticate_user(email, password)
     if not user:
       raise HTTPException(
@@ -53,16 +54,16 @@ class AuthService():
           detail="Incorrect email or password",
           headers={"WWW-Authenticate": "Bearer"},
       )
-    return self.create_access_token(
+    token_str = self.create_access_token(
         data={'extra_data': {
-            'email': user['email'],
-            'roles': user['roles']
+            'email': user.email,
+            'roles': user.roles
         }
         }
     )
+    return Token(token=f"Bearer {token_str}", email=user.email, roles=user.email)
 
-  def get_content_token(self, token: str):
-
+  def get_content_token(self, token: str) -> dict:
     try:
       payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
       email: str = payload['extra_data']['email']
@@ -103,19 +104,19 @@ class AuthService():
     )
     raise credentials_exception
 
-  def is_admin(self, authorization: str):
+  def is_admin(self, authorization: str) -> bool:
     token = str(authorization).split(" ")[1]
     content = self.get_content_token(token)
     roles = content['roles']
-    return 'AMDIN' in roles
+    return 'ADMIN' in roles
 
-  def is_sales(self, authorization: str):
+  def is_sales(self, authorization: str) -> bool:
     token = str(authorization).split(" ")[1]
     content = self.get_content_token(token)
     roles = content['roles']
     return 'SALES' in roles
 
-  def is_manager(self, authorization: str):
+  def is_manager(self, authorization: str) -> bool:
     token = str(authorization).split(" ")[1]
     content = self.get_content_token(token)
     roles = content['roles']

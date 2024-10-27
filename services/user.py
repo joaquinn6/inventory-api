@@ -2,7 +2,7 @@ from datetime import datetime
 import shortuuid
 from fastapi import HTTPException
 
-from core.auth import get_password_hash
+from core.auth import AuthService
 
 
 class UserService():
@@ -24,7 +24,7 @@ class UserService():
     return {
         '_id': shortuuid.uuid(),
         'email': contract['email'].lower(),
-        'password': get_password_hash(contract['password']),
+        'password': AuthService().get_password_hash(contract['password']),
         'roles': contract['roles'],
         'full_name': contract['full_name']
     }

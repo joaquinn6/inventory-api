@@ -1,8 +1,11 @@
 """Routes y controllers de usuarios"""
-from fastapi import APIRouter, status, Body
+from fastapi import APIRouter, Depends, status, Body
 from services.user import UserService
 import core.var_mongo_provider as mongo_provider
-from core.auth import generate_token
+from core.auth import AuthService, OptionalHTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials
+
+auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
     prefix="",
@@ -16,7 +19,9 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     summary="Create a new user"
 )
-async def user_post(contract: dict = Body(...)):
+async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), contract: dict = Body(...)):
+  if not AuthService().is_admin(token):
+    AuthService().raise_unauthorized()
   service = UserService(mongo_provider.db)
   return service.create_user(contract)
 
@@ -26,7 +31,8 @@ async def user_post(contract: dict = Body(...)):
     status_code=status.HTTP_200_OK,
 )
 async def login(contract: dict = Body(...)):
-  access_token = generate_token(contract['email'], contract['password'])
+  access_token = AuthService().generate_token(
+      contract['email'], contract['password'])
   return access_token
 
 

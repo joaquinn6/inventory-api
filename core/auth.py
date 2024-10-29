@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 from typing import Optional
+from datetime import datetime, timedelta
 
 from fastapi import HTTPException, Request, status
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
@@ -7,9 +7,9 @@ from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+from core import var_mongo_provider as mongo_provider
 from core.var_env import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-import core.var_mongo_provider as mongo_provider
-from models.user_model import UserBase
+from models.user_model import User
 from models.token_model import Token
 ALGORITHM = "HS256"
 
@@ -31,13 +31,13 @@ class AuthService():
   def get_user(self, email: str) -> dict:
     return mongo_provider.db.users.find_one({'email': email})
 
-  def authenticate_user(self, email: str, password: str) -> UserBase | None:
+  def authenticate_user(self, email: str, password: str) -> User | None:
     user = self.get_user(email)
     if not user:
       return None
     if not self.verify_password(password, user['password']):
       return None
-    return UserBase(**user)
+    return User(**user)
 
   def create_access_token(self, data: dict) -> str:
     to_encode = data.copy()

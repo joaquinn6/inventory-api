@@ -1,8 +1,8 @@
 import shortuuid
 from datetime import datetime
-from fastapi import HTTPException
+from core import helpers_api
 from models.price_history_model import PriceChangeType
-from services.price_history_service import PriceHistorytService
+from services.price_history_service import PriceHistoryService
 from schemas.product_schema import ProductCreateResponse, ProductCreate
 
 
@@ -14,13 +14,13 @@ class ProductService():
     exist_product = self._database.products.find_one(
         {'code': product.code.upper()})
     if exist_product:
-      raise HTTPException(409, "El código de producto ya existe")
+      helpers_api.raise_error_409('Code')
 
     entity = self._create_entity(product=product)
     entity['created_at'] = datetime.utcnow()
     entity['updated_at'] = datetime.utcnow()
     self._database.products.insert_one(entity)
-    price_service = PriceHistorytService(self._database)
+    price_service = PriceHistoryService(self._database)
     price_service.create_history(
         entity['_id'], entity['purchase_price'], PriceChangeType.PURCHASE, 'New product')
     price_service.create_history(

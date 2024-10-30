@@ -1,7 +1,7 @@
-import shortuuid
 from datetime import datetime
-from fastapi import HTTPException
+import shortuuid
 
+from core import helpers_api
 from core.auth import AuthService
 from schemas.user_schema import UserResponse, UserCreate
 
@@ -13,7 +13,7 @@ class UserService():
   def create_user(self, user: UserCreate) -> UserResponse:
     exist_user = self._database.users.find_one({'email': user.email})
     if exist_user:
-      raise HTTPException(409, "Email ya posee una cuenta en el sistema")
+      helpers_api.raise_error_409('Email')
 
     entity = self._create_entity(user=user)
     entity['created_at'] = datetime.utcnow()

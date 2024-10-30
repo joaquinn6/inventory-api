@@ -88,14 +88,6 @@ class AuthService():
     )
     raise credentials_exception
 
-  def raise_unauthorized(self):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="You are not authorized for this action",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    raise credentials_exception
-
   def _raise_token_expired(self):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

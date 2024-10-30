@@ -4,7 +4,7 @@ import shortuuid
 from models.price_history_model import PriceChangeType
 
 
-class PriceHistorytService():
+class PriceHistoryService():
   def __init__(self, database) -> None:
     self._database = database
 

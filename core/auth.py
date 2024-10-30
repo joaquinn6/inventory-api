@@ -114,13 +114,13 @@ class AuthService():
     token = str(authorization).split(" ")[1]
     content = self.get_content_token(token)
     roles = content['roles']
-    return 'SALES' in roles
+    return 'SALES' in roles or 'MANAGER' in roles or 'ADMIN' in roles
 
   def is_manager(self, authorization: str) -> bool:
     token = str(authorization).split(" ")[1]
     content = self.get_content_token(token)
     roles = content['roles']
-    return 'MANAGER' in roles
+    return 'MANAGER' in roles or 'ADMIN' in roles
 
 
 class OptionalHTTPBearer(HTTPBearer):

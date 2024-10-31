@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from schemas.query_base import QueryBase
 
 
 class ProductCreate(BaseModel):
@@ -12,7 +13,7 @@ class ProductCreate(BaseModel):
 
 
 class ProductCreateResponse(BaseModel):
-  id: str = None
+  id: str = Field(..., alias="_id")
   name: str = Field(...)
   code: str = Field(...)
   description: str = Field(...)
@@ -22,3 +23,15 @@ class ProductCreateResponse(BaseModel):
   stock: int = Field(default=0)
   created_at: datetime = None
   updated_at: datetime = None
+
+
+class ProductQuery(QueryBase):
+  name: str = None
+  code: str = None
+  categories: list[str] = None
+  in_stock: bool = None
+
+
+class ProductListResponse(BaseModel):
+  total: int = Field(...)
+  items: list[ProductCreateResponse] = Field(...)

@@ -19,7 +19,7 @@ class UserService():
     entity['created_at'] = datetime.utcnow()
     entity['updated_at'] = datetime.utcnow()
     self._database.users.insert_one(entity)
-    return UserResponse(id=entity['_id'], **entity)
+    return UserResponse(**entity)
 
   def _create_entity(self, user: UserCreate) -> dict:
     return {

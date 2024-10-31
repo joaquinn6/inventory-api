@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Product(BaseModel):
-  id: str = None
+  id: str = Field(..., alias="_id")
   name: str = Field(...)
   code: str = Field(...)
   description: str = Field(...)

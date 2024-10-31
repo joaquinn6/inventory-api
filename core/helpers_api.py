@@ -1,4 +1,52 @@
 from fastapi import HTTPException, status
+from core import var_mongo_provider as mongo_provider
+import pymongo
+
+
+def get_paginator(collection: str, query: dict, pagination: dict, fct=None, project=None) -> dict:
+  page_size = 0
+  page_num = 0
+  sort = "created_at"
+  sort_direction = pymongo.DESCENDING
+  if "limit" in pagination:
+    page_size = int(pagination['limit'])
+
+  if "page" in pagination:
+    page_num = int(pagination['page'])
+
+  if "sort" in pagination:
+    sort = pagination['sort']
+
+  if "order" in pagination:
+    if pagination['order'] == "1":
+      sort_direction = pymongo.ASCENDING
+    elif pagination['order'] == "-1":
+      sort_direction = pymongo.DESCENDING
+
+  coll = mongo_provider.db.get_collection(collection)
+  total = coll.count_documents(query)
+  ordenes = [(sort, sort_direction)]
+  if sort != "created_at":
+    ordenes.append(("_id", pymongo.DESCENDING))
+
+  skips = 0
+  if page_size != 0:
+    skips = page_size * page_num
+
+  cursor = None
+  if page_size == 0:
+    cursor = coll.find(query, project).sort(ordenes)
+  else:
+    cursor = coll.find(query, project).sort(
+        ordenes).skip(skips).limit(page_size)
+
+  entities = list([])
+  for entity in cursor:
+    if fct:
+      fct(entity)
+    entities.append(entity)
+
+  return {'total': total, 'items': entities}
 
 
 def raise_error_404(entity: str = 'Entity'):

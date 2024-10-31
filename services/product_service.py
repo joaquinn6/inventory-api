@@ -1,9 +1,10 @@
+import re
 import shortuuid
 from datetime import datetime
 from core import helpers_api
 from models.price_history_model import PriceChangeType
 from services.price_history_service import PriceHistoryService
-from schemas.product_schema import ProductCreateResponse, ProductCreate
+from schemas.product_schema import ProductCreateResponse, ProductCreate, ProductQuery
 
 
 class ProductService():
@@ -25,7 +26,12 @@ class ProductService():
         entity['_id'], entity['purchase_price'], PriceChangeType.PURCHASE, 'New product')
     price_service.create_history(
         entity['_id'], entity['purchase_price'], PriceChangeType.SALE, 'New product')
-    return ProductCreateResponse(id=entity['_id'], **entity)
+    return ProductCreateResponse(**entity)
+
+  def get_query(self, query_params: ProductQuery) -> (dict, dict):
+    pagination = self._get_pagination(query_params)
+    query = self._get_query(query_params)
+    return query, pagination
 
   def _create_entity(self, product: ProductCreate) -> dict:
     return {
@@ -37,4 +43,29 @@ class ProductService():
         'purchase_price': product.purchase_price,
         'sale_price': product.sale_price,
         'stock': 0
+    }
+
+  def _get_query(self, query_params: ProductQuery) -> dict:
+    query = dict({})
+
+    if query_params.name:
+      query['name'] = re.compile(f'.*{query_params.name}.*', re.I)
+
+    if query_params.code:
+      query['code'] = re.compile(f'{query_params.code.upper()}.*', re.I)
+    if query_params.categories:
+      query['categories'] = {'$in': query_params.categories}
+    if query_params.in_stock is not None:
+      if not query_params.in_stock:
+        query['stock'] = 0
+      else:
+        query['stock'] = {'$gt': 0}
+    return query
+
+  def _get_pagination(self, query_params: ProductQuery) -> dict:
+    return {
+        'page': query_params.page,
+        'limit': query_params.limit,
+        'order': query_params.order,
+        'sort': query_params.sort
     }

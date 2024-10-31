@@ -26,7 +26,7 @@ async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), 
     helpers_api.raise_no_authorized()
   service = UserService(mongo_provider.db)
   new_user = service.create_user(user)
-  return new_user.model_dump()
+  return new_user.model_dump(by_alias=True)
 
 
 @router.post(

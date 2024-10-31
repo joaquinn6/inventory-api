@@ -15,7 +15,7 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-  id: str = Field()
+  id: str = Field(..., alias="_id")
   email: str = Field(...)
   roles: list[str] = Field(...)
   full_name: str = Field(...)

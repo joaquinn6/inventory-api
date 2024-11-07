@@ -2,8 +2,9 @@
 APi para llevar un inventario básico de una tienda
 
 ## Getting Started
-1. Instalar mongodb en su ordenador local
-2. Instalar pipenv
+1. Instalar mongodb en su ordenador local - https://www.mongodb.com/try/download/community
+2. Instalar python 3.11
+3. Instalar pipenv
 ```zsh
 pip install pipenv
 ```

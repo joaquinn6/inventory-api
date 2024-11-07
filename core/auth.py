@@ -29,7 +29,7 @@ class AuthService():
     return pwd_context.hash(password)
 
   def get_user(self, email: str) -> dict:
-    return mongo_provider.db.users.find_one({'email': email})
+    return mongo_provider.db.users.find_one({'email': email.lower()})
 
   def authenticate_user(self, email: str, password: str) -> User | None:
     user = self.get_user(email)

@@ -8,8 +8,6 @@ class ProductCreate(BaseModel):
   code: str = Field(...)
   description: str = Field(...)
   categories: list[str] = Field(...)
-  purchase_price: float = Field(...)
-  sale_price: float = Field(...)
 
 
 class ProductCreateResponse(BaseModel):

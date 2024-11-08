@@ -2,8 +2,6 @@ import re
 import shortuuid
 from datetime import datetime
 from core import helpers_api
-from models.price_history_model import PriceChangeType
-from services.price_history_service import PriceHistoryService
 from schemas.product_schema import ProductCreateResponse, ProductCreate, ProductQuery
 
 
@@ -21,14 +19,9 @@ class ProductService():
     entity['created_at'] = datetime.utcnow()
     entity['updated_at'] = datetime.utcnow()
     self._database.products.insert_one(entity)
-    price_service = PriceHistoryService(self._database)
-    price_service.create_history(
-        entity['_id'], entity['purchase_price'], PriceChangeType.PURCHASE, 'New product')
-    price_service.create_history(
-        entity['_id'], entity['purchase_price'], PriceChangeType.SALE, 'New product')
     return ProductCreateResponse(**entity)
 
-  def get_query(self, query_params: ProductQuery) -> (dict, dict):
+  def get_query(self, query_params: ProductQuery) -> tuple:
     pagination = self._get_pagination(query_params)
     query = self._get_query(query_params)
     return query, pagination
@@ -40,8 +33,8 @@ class ProductService():
         'code': product.code.upper(),
         'categories': product.categories,
         'description': product.description.capitalize(),
-        'purchase_price': product.purchase_price,
-        'sale_price': product.sale_price,
+        'purchase_price': 0.0,
+        'sale_price': 0.0,
         'stock': 0
     }
 

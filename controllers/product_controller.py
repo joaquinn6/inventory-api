@@ -41,6 +41,23 @@ async def product_get_by_id(product_id: str) -> Product:
   return product.model_dump(by_alias=True)
 
 
+@router.put(
+    "/products/{product_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Get product by id"
+)
+# TODO> create schemas como se debe
+async def product_update_by_id(product_id: str, product: ProductCreate = Body(...),  token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> ProductCreate:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  entity = mongo_provider.db.products.find_one({'_id': product_id})
+  if not entity:
+    helpers_api.raise_error_404('Product')
+  service = ProductService(mongo_provider.db)
+  service.update_product(product_id, product)
+  return product.model_dump(by_alias=True)
+
+
 @router.get(
     "/products",
     status_code=status.HTTP_200_OK,

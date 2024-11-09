@@ -5,7 +5,7 @@ from core.auth import AuthService, OptionalHTTPBearer
 from core import helpers_api, var_mongo_provider as mongo_provider
 from models.product_model import Product
 from services.product_service import ProductService
-from schemas.product_schema import ProductCreate, ProductCreateResponse, ProductQuery, ProductListResponse
+from schemas.product_schema import ProductCreate, ProductUpdate, ProductCreateResponse, ProductUpdateResponse, ProductQuery, ProductListResponse
 auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
@@ -46,16 +46,18 @@ async def product_get_by_id(product_id: str) -> Product:
     status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
-# TODO> create schemas como se debe
-async def product_update_by_id(product_id: str, product: ProductCreate = Body(...),  token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> ProductCreate:
+async def product_update_by_id(
+        product_id: str,
+        product: ProductUpdate = Body(...),
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> ProductUpdateResponse:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
   entity = mongo_provider.db.products.find_one({'_id': product_id})
   if not entity:
     helpers_api.raise_error_404('Product')
   service = ProductService(mongo_provider.db)
-  service.update_product(product_id, product)
-  return product.model_dump(by_alias=True)
+  update_product = service.update_product(product_id, product)
+  return update_product.model_dump(by_alias=True)
 
 
 @router.get(

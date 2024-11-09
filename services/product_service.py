@@ -2,7 +2,7 @@ import re
 import shortuuid
 from datetime import datetime
 from core import helpers_api
-from schemas.product_schema import ProductCreateResponse, ProductCreate, ProductQuery
+from schemas.product_schema import ProductCreateResponse, ProductUpdateResponse, ProductCreate, ProductQuery
 
 
 class ProductService():
@@ -21,7 +21,7 @@ class ProductService():
     self._database.products.insert_one(entity)
     return ProductCreateResponse(**entity)
 
-  def update_product(self, id_product: str, product: ProductCreate):
+  def update_product(self, id_product: str, product: ProductCreate) -> ProductUpdateResponse:
     exist_product = self._database.products.find_one(
         {'code': product.code.upper(), '_id': {'$ne': id_product}})
     if exist_product:
@@ -30,7 +30,8 @@ class ProductService():
     entity = self._update_entity(product=product)
     entity['updated_at'] = datetime.utcnow()
     self._database.products.update_one({'_id': id_product}, {'$set': entity})
-    return
+    entity['_id'] = id_product
+    return ProductUpdateResponse(**entity)
 
   def get_query(self, query_params: ProductQuery) -> tuple:
     pagination = self._get_pagination(query_params)

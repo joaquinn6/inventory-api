@@ -12,7 +12,7 @@ def get_paginator(collection: str, query: dict, pagination: dict, fct=None, proj
     page_size = int(pagination['limit'])
 
   if "page" in pagination:
-    page_num = int(pagination['page'])
+    page_num = int(pagination['page']) - 1
 
   if "sort" in pagination:
     sort = pagination['sort']

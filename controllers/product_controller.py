@@ -30,7 +30,7 @@ async def product_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme
 
 @router.get(
     "/products/{product_id}",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
 async def product_get_by_id(product_id: str) -> Product:

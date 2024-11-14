@@ -33,7 +33,9 @@ async def product_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme
     status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
-async def product_get_by_id(product_id: str) -> Product:
+async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Product:
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
   entity = mongo_provider.db.products.find_one({'_id': product_id})
   if not entity:
     helpers_api.raise_error_404('Product')
@@ -65,7 +67,9 @@ async def product_update_by_id(
     status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
-async def get_products(query_params: ProductQuery = Query(...)) -> ProductListResponse:
+async def get_products(query_params: ProductQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> ProductListResponse:
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
   service = ProductService(mongo_provider.db)
   query, pagination = service.get_query(query_params)
   products = ProductListResponse(

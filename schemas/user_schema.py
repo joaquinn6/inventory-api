@@ -18,7 +18,6 @@ class UserUpdate(BaseModel):
   email: str = Field(...)
   roles: list[str] = Field(...)
   full_name: str = Field(...)
-  password: str = Field(...)
 
 
 class UserResponse(BaseModel):
@@ -28,6 +27,9 @@ class UserResponse(BaseModel):
   full_name: str = Field(...)
   created_at: datetime = None
   updated_at: datetime = None
+
+class deleteUser(QueryBase):
+  email: bool = True
 
 class UserQuery(QueryBase):
   email: str = None

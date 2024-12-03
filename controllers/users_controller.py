@@ -5,7 +5,7 @@ from core import helpers_api, var_mongo_provider as mongo_provider
 from core.auth import AuthService, OptionalHTTPBearer
 from services.user_service import UserService
 from models.token_model import Token
-from schemas.user_schema import UserCreate, UserLogin, UserResponse, UserQuery, UserListResponse, UserUpdate
+from schemas.user_schema import UserCreate, UserLogin, UserResponse, UserQuery, UserListResponse, UserUpdate, deleteUser
 from models.user_model import UserInfo
 from fastapi import Query
 
@@ -68,9 +68,9 @@ async def user_update_by_id(
 async def get_users(query_params: UserQuery = Query(...)) -> UserListResponse:
   service = UserService(mongo_provider.db)
   query, pagination = service.get_query(query_params)
-  products = UserListResponse(
+  users = UserListResponse(
       **helpers_api.get_paginator('users', query, pagination))
-  return products.model_dump(by_alias=True)
+  return users.model_dump(by_alias=True)
 
 
 @router.post(
@@ -80,3 +80,20 @@ async def get_users(query_params: UserQuery = Query(...)) -> UserListResponse:
 async def login(user: UserLogin = Body(...)) -> Token:
   token = AuthService().generate_token(user.email, user.password)
   return token
+
+@router.delete(
+    "/users/delete/{user_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete user by id"
+)
+async def user_delete_by_id(
+        user_id: str,
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> deleteUser:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  if not entity:
+    helpers_api.raise_error_404('User')
+  service = UserService(mongo_provider.db)
+  delete_user = service.delete_user(user_id)
+  return delete_user.model_dump(by_alias=True)

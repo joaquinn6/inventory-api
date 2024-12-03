@@ -3,7 +3,7 @@ import shortuuid
 import re
 from core import helpers_api
 from core.auth import AuthService
-from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate
+from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate, deleteUser
 
 
 class UserService():
@@ -32,6 +32,7 @@ class UserService():
   def get_query(self, query_params: UserQuery) -> tuple:
     pagination = self._get_pagination(query_params)
     query = self._get_query(query_params)
+    query['active'] = True
     return query, pagination
   
   def _get_query(self, query_params: UserQuery) -> dict:
@@ -41,9 +42,8 @@ class UserService():
     return query
   
   def update_user(self, id_user: str, user: create_user) -> UserUpdate:
-    exist_user = self._database.users.find_one(
-        {'_id': {'$ne': id_user}})
-    if exist_user:
+    exist_user = self._database.users.find_one({'_id': id_user})
+    if not exist_user:
       helpers_api.raise_error_409('Code')
 
     entity = self._update_entity(user=user)
@@ -51,6 +51,18 @@ class UserService():
     self._database.users.update_one({'_id': id_user}, {'$set': entity})
     entity['_id'] = id_user
     return UserUpdate(**entity)
+  
+  def delete_user(self, id_user: str) -> deleteUser:
+    exist_user = self._database.users.find_one({'_id': id_user})
+    if not exist_user:
+      helpers_api.raise_error_409('Code')
+
+    self._database.users.update_one({'_id': id_user}, {'$set': {'active': False}})
+    entity = {
+        'id': id_user,
+        'active': False,
+    }
+    return deleteUser(**entity)
   
   def _update_entity(self, user: UserCreate) -> dict:
     return {

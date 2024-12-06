@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from schemas.query_base import QueryBase
 
 
 class UserLogin(BaseModel):
@@ -13,6 +14,11 @@ class UserCreate(BaseModel):
   full_name: str = Field(...)
   password: str = Field(...)
 
+class UserUpdate(BaseModel):
+  email: str = Field(...)
+  roles: list[str] = Field(...)
+  full_name: str = Field(...)
+
 
 class UserResponse(BaseModel):
   id: str = Field(..., alias="_id")
@@ -21,3 +27,15 @@ class UserResponse(BaseModel):
   full_name: str = Field(...)
   created_at: datetime = None
   updated_at: datetime = None
+
+class deleteUser(QueryBase):
+  email: bool = True
+
+class UserQuery(QueryBase):
+  email: str = None
+  roles: list[str] = None
+  full_name: str = None
+
+class UserListResponse(BaseModel):
+  total: int = Field(...)
+  items: list[UserResponse] = Field(...)

@@ -28,11 +28,15 @@ async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
   backup_file = service.create_backup()
   now = datetime.utcnow()
   filename = f'backup-{now.strftime("%Y%m%d%H%M")}.zip'
-  return StreamingResponse(
+
+  response = StreamingResponse(
       backup_file,
       media_type="application/zip",
       headers={"Content-Disposition": f"attachment; filename={filename}"}
   )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
 
 
 @router.post(

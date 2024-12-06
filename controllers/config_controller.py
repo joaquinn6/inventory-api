@@ -1,6 +1,7 @@
 """Routes y controllers de usuarios"""
 from datetime import datetime
-from fastapi import APIRouter, Depends, status
+from io import BytesIO
+from fastapi import APIRouter, Depends, status, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from core.auth import AuthService, OptionalHTTPBearer
@@ -27,8 +28,27 @@ async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
   backup_file = service.create_backup()
   now = datetime.utcnow()
   filename = f'backup-{now.strftime("%Y%m%d%H%M")}.zip'
-  return StreamingResponse(
+
+  response = StreamingResponse(
       backup_file,
       media_type="application/zip",
       headers={"Content-Disposition": f"attachment; filename={filename}"}
   )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
+
+
+@router.post(
+    "/config/restore",
+    status_code=status.HTTP_200_OK,
+    summary="Create a backup of the database"
+)
+async def restore_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), file: UploadFile = File(...)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+
+  zip_file = BytesIO(await file.read())
+  service = ConfigService(mongo_provider.db)
+  result = service.restore_db(zip_file)
+  return result

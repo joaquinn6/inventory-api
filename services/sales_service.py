@@ -2,6 +2,7 @@
 import re
 from schemas.sales_schema import SalesQuery
 
+
 class SaleService():
   def __init__(self, database) -> None:
     self._database = database
@@ -11,9 +12,15 @@ class SaleService():
     query = self._get_query(query_params)
     return query, pagination
 
-  def _get_query(self, query_params: SalesQuery) -> dict:
+  def _get_query(self, _: SalesQuery) -> dict:
     query = dict({})
 
-    if query_params.name:
-      query['name'] = re.compile(f'.*{query_params.name}.*', re.I)
     return query
+
+  def _get_pagination(self, query_params: SalesQuery) -> dict:
+    return {
+        'page': query_params.page,
+        'limit': query_params.limit,
+        'order': query_params.order,
+        'sort': query_params.sort
+    }

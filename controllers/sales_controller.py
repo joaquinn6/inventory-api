@@ -1,11 +1,10 @@
 """Routes y controllers de ventas"""
 from fastapi import Query, status, APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials
-from core.auth import OptionalHTTPBearer
+from core.auth import AuthService, OptionalHTTPBearer
 from core import helpers_api, var_mongo_provider as mongo_provider
 from services.sales_service import SaleService
 from schemas.sales_schema import SalesListResponse, SalesQuery
-from core.auth import AuthService, OptionalHTTPBearer
 
 auth_scheme = OptionalHTTPBearer()
 router = APIRouter(
@@ -13,6 +12,7 @@ router = APIRouter(
     tags=["Ventas"],
     responses={404: {"description": "Not found"}},
 )
+
 
 @router.get(
     "/sales",

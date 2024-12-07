@@ -44,11 +44,11 @@ async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
     status_code=status.HTTP_200_OK,
     summary="Create a backup of the database"
 )
-async def restore_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), file: UploadFile = File(...)) -> dict:
+async def restore_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), file: UploadFile = File(...)):
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
 
   zip_file = BytesIO(await file.read())
   service = ConfigService(mongo_provider.db)
-  result = service.restore_db(zip_file)
-  return result
+  service.restore_db(zip_file)
+  return

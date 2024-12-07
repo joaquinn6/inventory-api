@@ -45,8 +45,6 @@ class ConfigService():
           collection.delete_many({})
           if data:
             collection.insert_many(data)
-
-      return {"status": "success", "message": "Restauración completada exitosamente."}
     except Exception as e:
       raise HTTPException(
           status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

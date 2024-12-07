@@ -1,9 +1,9 @@
 from datetime import datetime
-import shortuuid
 import re
+import shortuuid
 from core import helpers_api
 from core.auth import AuthService
-from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate, deleteUser
+from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate
 
 
 class UserService():
@@ -27,43 +27,37 @@ class UserService():
         'email': user.email.lower(),
         'password': AuthService().get_password_hash(user.password),
         'roles': user.roles,
-        'full_name': user.full_name
+        'full_name': user.full_name,
+        'active': True
     }
+
   def get_query(self, query_params: UserQuery) -> tuple:
     pagination = self._get_pagination(query_params)
     query = self._get_query(query_params)
-    query['active'] = True
     return query, pagination
-  
+
   def _get_query(self, query_params: UserQuery) -> dict:
     query = dict({})
     if query_params.email:
       query['email'] = re.compile(f'.*{query_params.email}.*', re.I)
-    return query
-  
-  def update_user(self, id_user: str, user: create_user) -> UserUpdate:
-    exist_user = self._database.users.find_one({'_id': id_user})
-    if not exist_user:
-      helpers_api.raise_error_409('Code')
 
+    if query_params.active is not None:
+      query['active'] = query_params.active
+
+    return query
+
+  def update_user(self, id_user: str, user: UserUpdate) -> UserResponse:
     entity = self._update_entity(user=user)
     entity['updated_at'] = datetime.utcnow()
-    self._database.users.update_one({'_id': id_user}, {'$set': entity})
-    entity['_id'] = id_user
-    return UserUpdate(**entity)
-  
-  def delete_user(self, id_user: str) -> deleteUser:
-    exist_user = self._database.users.find_one({'_id': id_user})
-    if not exist_user:
-      helpers_api.raise_error_409('Code')
+    entity = self._database.users.find_one_and_update(
+        {'_id': id_user}, {'$set': entity})
+    return UserResponse(**entity)
 
-    self._database.users.update_one({'_id': id_user}, {'$set': {'active': False}})
-    entity = {
-        'id': id_user,
-        'active': False,
-    }
-    return deleteUser(**entity)
-  
+  def delete_user(self, id_user: str) -> UserResponse:
+    entity = self._database.users.find_one_and_update(
+        {'_id': id_user}, {'$set': {'active': False}})
+    return UserResponse(**entity)
+
   def _update_entity(self, user: UserCreate) -> dict:
     return {
         'email': user.email,

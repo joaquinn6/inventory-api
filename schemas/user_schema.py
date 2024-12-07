@@ -14,6 +14,7 @@ class UserCreate(BaseModel):
   full_name: str = Field(...)
   password: str = Field(...)
 
+
 class UserUpdate(BaseModel):
   email: str = Field(...)
   roles: list[str] = Field(...)
@@ -25,16 +26,17 @@ class UserResponse(BaseModel):
   email: str = Field(...)
   roles: list[str] = Field(...)
   full_name: str = Field(...)
+  active: bool = Field(...)
   created_at: datetime = None
   updated_at: datetime = None
 
-class deleteUser(QueryBase):
-  email: bool = True
 
 class UserQuery(QueryBase):
   email: str = None
   roles: list[str] = None
   full_name: str = None
+  active: bool | None = None
+
 
 class UserListResponse(BaseModel):
   total: int = Field(...)

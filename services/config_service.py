@@ -1,6 +1,7 @@
 from io import BytesIO
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 from bson import json_util
+from fastapi import HTTPException, status
 
 
 class ConfigService():
@@ -11,7 +12,7 @@ class ConfigService():
     try:
       memory_file = BytesIO()
 
-      with ZipFile(memory_file, 'w') as zip_file:
+      with ZipFile(memory_file, 'w', compression=ZIP_DEFLATED) as zip_file:
         for collection_name in self._database.list_collection_names():
           collection = self._database[collection_name]
           data = list(collection.find())
@@ -47,4 +48,6 @@ class ConfigService():
 
       return {"status": "success", "message": "Restauración completada exitosamente."}
     except Exception as e:
-      raise RuntimeError(f"Error al restaurar la base de datos: {e}") from e
+      raise HTTPException(
+          status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+          detail=f"Error al restaurar la base de datos: {e}") from e

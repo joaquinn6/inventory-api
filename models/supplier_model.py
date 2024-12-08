@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Contact(BaseModel):
-  name: str = Field(...)
+  name: str = ''
   email: str = ''
   phone: str = ''
 

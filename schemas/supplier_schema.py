@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from models.supplier_model import Supplier
-from datetime import datetime
 from schemas.query_base import QueryBase
 
 
@@ -13,7 +12,7 @@ class SupplierQuery(QueryBase):
 
 
 class Contact(BaseModel):
-  name: str = Field(...)
+  name: str = ''
   email: str = ''
   phone: str = ''
 

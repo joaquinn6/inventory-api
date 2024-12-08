@@ -11,7 +11,7 @@ class SupplierService():
     self._database = database
 
   def create_supplier(self, supplier: SupplierCreate) -> Supplier:
-    exist_supplier = self._database.supplier.find_one(
+    exist_supplier = self._database.suppliers.find_one(
         {'code': supplier.code.upper()})
     if exist_supplier:
       helpers_api.raise_error_409('Code')
@@ -20,7 +20,7 @@ class SupplierService():
     entity['_id'] = shortuuid.uuid()
     entity['created_at'] = datetime.utcnow()
     entity['updated_at'] = datetime.utcnow()
-    entity = self._database.supplier.insert_one(entity)
+    self._database.suppliers.insert_one(entity)
     return Supplier(**entity)
 
   def update_supplier(self, id_supplier: str, supplier: SupplierUpdate) -> Supplier:

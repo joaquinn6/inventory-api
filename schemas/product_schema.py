@@ -5,14 +5,14 @@ from schemas.query_base import QueryBase
 
 class ProductCreate(BaseModel):
   name: str = Field(...)
-  code: str = Field(...)
+  code: str = Field(..., max_length=8)
   description: str = Field(...)
   categories: list[str] = Field(...)
 
 
 class ProductUpdate(BaseModel):
   name: str = Field(...)
-  code: str = Field(...)
+  code: str = Field(..., max_length=8)
   description: str = Field(...)
   categories: list[str] = Field(...)
 
@@ -20,7 +20,7 @@ class ProductUpdate(BaseModel):
 class ProductCreateResponse(BaseModel):
   id: str = Field(..., alias="_id")
   name: str = Field(...)
-  code: str = Field(...)
+  code: str = Field(..., max_length=8)
   description: str = Field(...)
   categories: list[str] = Field(...)
   purchase_price: float = Field(...)
@@ -33,7 +33,7 @@ class ProductCreateResponse(BaseModel):
 class ProductUpdateResponse(BaseModel):
   id: str = Field(..., alias="_id")
   name: str = Field(...)
-  code: str = Field(...)
+  code: str = Field(..., max_length=8)
   description: str = Field(...)
   categories: list[str] = Field(...)
 

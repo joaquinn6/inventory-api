@@ -10,7 +10,7 @@ auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
     prefix="",
-    tags=["Productos"],
+    tags=["Products"],
     responses={404: {"description": "Not found"}},
 )
 

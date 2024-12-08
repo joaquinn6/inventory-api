@@ -49,7 +49,7 @@ async def user_get_by_id(user_id: str, token: HTTPAuthorizationCredentials = Dep
 @router.put(
     "/users/{user_id}",
     status_code=status.HTTP_200_OK,
-    summary="Put user by id"
+    summary="Update user by id"
 )
 async def user_update_by_id(
         user_id: str,

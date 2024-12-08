@@ -46,7 +46,7 @@ async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials
 @router.put(
     "/products/{product_id}",
     status_code=status.HTTP_200_OK,
-    summary="Get product by id"
+    summary="Update product by id"
 )
 async def product_update_by_id(
         product_id: str,
@@ -65,7 +65,7 @@ async def product_update_by_id(
 @router.get(
     "/products",
     status_code=status.HTTP_200_OK,
-    summary="Get product by id"
+    summary="Get products"
 )
 async def get_products(query_params: ProductQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> ProductListResponse:
   if not AuthService().is_sales(token):

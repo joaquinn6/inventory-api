@@ -4,6 +4,7 @@ from datetime import datetime
 from core import helpers_api
 from schemas.supplier_schema import SupplierQuery, SupplierCreate, SupplierUpdate
 from models.supplier_model import Supplier
+from pymongo import ReturnDocument
 
 
 class SupplierService():
@@ -32,7 +33,7 @@ class SupplierService():
     entity = self._create_entity(supplier=supplier)
     entity['updated_at'] = datetime.utcnow()
     entity = self._database.suppliers.find_one_and_update(
-        {'_id': id_supplier}, {'$set': entity})
+        {'_id': id_supplier}, {'$set': entity}, return_document=ReturnDocument.AFTER)
     return Supplier(**entity)
 
   def get_query(self, query_params: SupplierQuery) -> tuple:

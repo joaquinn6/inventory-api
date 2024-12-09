@@ -54,7 +54,7 @@ class SaleService():
       query['pay_type'] = {'$in': query_params.pay_types}
 
     if query_params.amount:
-      if query_params.amount[1] != 'MAX':
+      if query_params.amount[1] != 10000:
         query['total_amount'] = {
             '$gte': query_params.amount[0], '$lte':  query_params.amount[1]}
       else:

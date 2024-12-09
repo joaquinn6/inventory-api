@@ -53,7 +53,7 @@ class PurchaseService():
       query['supplier._id'] = query_params.supplier
 
     if query_params.amount:
-      if query_params.amount[1] != 'MAX':
+      if query_params.amount[1] != 10000:
         query['total_amount'] = {
             '$gte': query_params.amount[0], '$lte':  query_params.amount[1]}
       else:

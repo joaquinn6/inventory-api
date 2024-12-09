@@ -1,4 +1,3 @@
-from typing import Union, Tuple
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator
@@ -23,12 +22,7 @@ class PurchaseCreate(BaseModel):
 class PurchaseQuery(QueryBase):
   date: tuple[datetime, datetime] = None
   supplier: str = None
-  amount: Union[Tuple[int, str], Tuple[int, int]] = Field(default=(0, "MAX"))
-
-  @field_validator("amount", mode="before")
-  @classmethod
-  def validate_item(cls, value):
-    return parse_amount_query(value)
+  amount: list[int] = Field(default=(0, 10000))
 
 
 class PurchaseListResponse(BaseModel):

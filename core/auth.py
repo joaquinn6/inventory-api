@@ -57,7 +57,8 @@ class AuthService():
     token_str = self.create_access_token(
         data={'extra_data': {
             'email': user.email,
-            'roles': user.roles
+            'roles': user.roles,
+            '_id': user.id
         }
         }
     )

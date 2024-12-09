@@ -20,7 +20,7 @@ class PurchaseCreate(BaseModel):
 class PurchaseQuery(QueryBase):
   date: tuple[datetime, datetime] = None
   supplier: str = None
-  amount: tuple[int, int | str] = tuple(0, 'MAX')
+  amount: tuple[int, int | str] = tuple([0, 'MAX'])
 
 
 class PurchaseListResponse(BaseModel):

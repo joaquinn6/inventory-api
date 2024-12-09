@@ -21,7 +21,7 @@ class SaleQuery(QueryBase):
   date: tuple[datetime, datetime] = None
   customer: str = None
   pay_types: list[PayWith] = None
-  amount: tuple[int, int | str] = tuple(0, 'MAX')
+  amount: tuple[int, int | str] = tuple([0, 'MAX'])
 
 
 class SaleListResponse(BaseModel):

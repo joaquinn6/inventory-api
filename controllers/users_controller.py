@@ -29,8 +29,8 @@ async def change_password(user_id: str, token: HTTPAuthorizationCredentials = De
   if not entity:
     helpers_api.raise_error_404('User')
   service = UserService(mongo_provider.db)
-  change_psw = service.change_password(user)
-  return change_psw.model_dump(by_alias=True)
+  service.change_password(user, entity)
+  return
 
 
 @router.post(

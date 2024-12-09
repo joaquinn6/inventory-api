@@ -35,7 +35,7 @@ async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_schem
     summary="Get purchase by id"
 )
 async def purchase_get_by_id(purchase_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PurchaseWithDetail:
-  if not AuthService().is_sales(token):
+  if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
   service = PurchaseService(mongo_provider.db)
   entity = service.get_purchase_by_id(purchase_id)
@@ -49,7 +49,7 @@ async def purchase_get_by_id(purchase_id: str, token: HTTPAuthorizationCredentia
     summary="Get purchases"
 )
 async def get_purchases(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PurchaseListResponse:
-  if not AuthService().is_sales(token):
+  if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
   service = PurchaseService(mongo_provider.db)
   query, pagination = service.get_query(query_params)

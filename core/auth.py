@@ -58,11 +58,10 @@ class AuthService():
         data={'extra_data': {
             'email': user.email,
             'roles': user.roles,
-            '_id': user.id
         }
         }
     )
-    return Token(token=f"Bearer {token_str}", email=user.email, roles=user.roles)
+    return Token(_id=user.id, token=f"Bearer {token_str}", email=user.email, roles=user.roles)
 
   def get_content_token(self, token: str) -> dict:
     try:

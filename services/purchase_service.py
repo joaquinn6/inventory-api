@@ -43,8 +43,7 @@ class PurchaseService():
   def _create_entity(self, purchase: PurchaseCreate) -> dict:
     return {
         'supplier': self._get_supplier(purchase.supplier_id),
-        'products': self._get_products(purchase.products),
-        'total_amount': sum([product.unit_purchase_price for product in purchase.products], 0)
+        'total_amount': sum([product.unit_purchase_price * product.units for product in purchase.products], 0)
     }
 
   def _get_query(self, query_params: PurchaseQuery) -> dict:
@@ -52,9 +51,6 @@ class PurchaseService():
 
     if query_params.supplier:
       query['supplier._id'] = query_params.supplier
-
-    if query_params.products:
-      query['products._id'] = {'$in': query_params.products}
 
     if query_params.amount:
       if query_params.amount[1] != 'MAX':
@@ -81,19 +77,6 @@ class PurchaseService():
         'code': supplier['code'],
         'name': supplier['name']
     }
-
-  def _get_products(self, products: list[Product]) -> list[dict]:
-    products_entities = list([])
-    for product in products:
-      entity = self._database.products.find_one({'_id': product.id})
-      if not entity:
-        helpers_api.raise_error_404(f'Product {product.id}')
-      products_entities.append({
-          '_id': entity['_id'],
-          'name': entity['name'],
-          'code': entity['code'],
-      })
-    return products_entities
 
   def _update_products(self, products: list[Product]):
     service = PriceHistoryService(self._database)

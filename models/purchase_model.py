@@ -17,6 +17,5 @@ class Product(BaseModel):
 class Purchase(BaseModel):
   id: str = Field(..., alias="_id")
   supplier: Supplier = Field(...)
-  products: list[Product] = Field(...)
   total_amount: float = Field(...)
   created_at: datetime = None

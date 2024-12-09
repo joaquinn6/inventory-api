@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from pymongo import ReturnDocument
 import shortuuid
 from core import helpers_api
 from core.auth import AuthService
@@ -81,20 +82,20 @@ class UserService():
         'order': query_params.order,
         'sort': query_params.sort
     }
-  def change_password(self, query_params: UserChangePassword, user: UserResponse) -> dict:
+
+  def change_password(self, query_params: UserChangePassword, user: UserResponse):
     auth_service = AuthService()
     plain_password = query_params.oldPassword
     password = user['password']
-    if auth_service.verify_password(plain_password, password):
-      new_hashed_password = auth_service.get_password_hash(query_params.password)
-      self.update_user_password(user['_id'], new_hashed_password)
-    else:
+
+    if not auth_service.verify_password(plain_password, password):
       helpers_api.raise_error_422()
-    return {}
-  
+
+    new_hashed_password = auth_service.get_password_hash(query_params.password)
+    self.update_user_password(user['_id'], new_hashed_password)
+    return
+
   def update_user_password(self, id_user: str, new_hashed_password: str):
     entity = {'password': new_hashed_password, 'updated_at': datetime.utcnow()}
-    entity = self._database.users.find_one_and_update(
-        {'_id': id_user}, {'$set': entity})  
-    return entity
-
+    self._database.users.update_one({'_id': id_user}, {'$set': entity})
+    return

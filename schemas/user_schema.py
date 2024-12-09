@@ -14,6 +14,10 @@ class UserCreate(BaseModel):
   full_name: str = Field(...)
   password: str = Field(...)
 
+class UserChangePassword(BaseModel):
+  email: str = Field(...)
+  password: str = Field(...)
+
 
 class UserUpdate(BaseModel):
   email: str = Field(...)

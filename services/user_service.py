@@ -3,7 +3,7 @@ import re
 import shortuuid
 from core import helpers_api
 from core.auth import AuthService
-from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate
+from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate, UserChangePassword
 
 
 class UserService():
@@ -81,3 +81,6 @@ class UserService():
         'order': query_params.order,
         'sort': query_params.sort
     }
+  def change_password(self, query_params: UserChangePassword) -> dict:
+    print(query_params)
+    return {}

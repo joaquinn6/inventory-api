@@ -22,9 +22,12 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="Change password"
 )
-async def change_password(token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)):
+async def change_password(user_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)):
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
+  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  if not entity:
+    helpers_api.raise_error_404('User')
   service = UserService(mongo_provider.db)
   change_psw = service.change_password(user)
   return change_psw.model_dump(by_alias=True)

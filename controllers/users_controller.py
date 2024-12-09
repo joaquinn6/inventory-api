@@ -17,6 +17,18 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+@router.post(
+    "/users/{user_id}/password",
+    status_code=status.HTTP_200_OK,
+    summary="Change password"
+)
+async def change_password(token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)):
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
+  service = UserService(mongo_provider.db)
+  change_psw = service.change_password(user)
+  return change_psw.model_dump(by_alias=True)
+
 
 @router.post(
     "/users",
@@ -105,15 +117,3 @@ async def user_delete_by_id(
   service = UserService(mongo_provider.db)
   delete_user = service.delete_user(user_id)
   return delete_user.model_dump(by_alias=True)
-
-@router.post(
-    "/user/password/change",
-    status_code=status.HTTP_200_OK,
-    summary="Change password"
-)
-async def change_password(token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)) -> UserResponse:
-  if not AuthService().is_manager(token):
-    helpers_api.raise_no_authorized()
-  service = UserService(mongo_provider.db)
-  change_psw = service.change_password(user)
-  return change_psw.model_dump(by_alias=True)

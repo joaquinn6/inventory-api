@@ -32,10 +32,10 @@ class UserResponse(BaseModel):
 
 
 class UserQuery(QueryBase):
+  full_name: str = None
   email: str = None
   roles: list[str] = None
-  full_name: str = None
-  active: bool | None = None
+  state: str = 'ALL'
 
 
 class UserListResponse(BaseModel):

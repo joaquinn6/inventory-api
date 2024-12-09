@@ -41,8 +41,17 @@ class UserService():
     if query_params.email:
       query['email'] = re.compile(f'.*{query_params.email}.*', re.I)
 
-    if query_params.active is not None:
-      query['active'] = query_params.active
+    if query_params.full_name:
+      query['full_name'] = re.compile(f'.*{query_params.full_name}.*', re.I)
+
+    if query_params.roles:
+      query['roles'] = {'$in': query_params.roles}
+
+    if query_params.state != 'ALL':
+      if query_params.state == 'ACTIVE':
+        query['active'] = True
+      else:
+        query['active'] = False
 
     return query
 

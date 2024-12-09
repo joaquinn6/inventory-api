@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Sale(BaseModel):
-  id: str = None
+  id: str = Field(..., alias="_id")
   date: str = Field(...)
   total_amount: float = Field(...)
   created_at: datetime = None

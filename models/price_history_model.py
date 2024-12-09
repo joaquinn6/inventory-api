@@ -9,10 +9,9 @@ class PriceChangeType(str, Enum):
 
 
 class PriceHistory(BaseModel):
-  id: str = None
+  id: str = Field(..., alias="_id")
   product_id: str = Field(...)
-  type: PriceChangeType
+  type: PriceChangeType = PriceChangeType.PURCHASE
   price: float = Field(...)
   date: datetime = Field(...)
-  reason: str = Field(...)
   created_at: datetime = None

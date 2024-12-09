@@ -42,7 +42,7 @@ class ProductQuery(QueryBase):
   name: str = None
   code: str = None
   categories: list[str] = None
-  in_stock: bool = None
+  stock: str = 'ALL'
 
 
 class ProductListResponse(BaseModel):

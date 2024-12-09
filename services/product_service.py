@@ -68,8 +68,8 @@ class ProductService():
       query['code'] = re.compile(f'{query_params.code.upper()}.*', re.I)
     if query_params.categories:
       query['categories'] = {'$in': query_params.categories}
-    if query_params.in_stock is not None:
-      if not query_params.in_stock:
+    if query_params.stock != 'ALL':
+      if query_params.stock == 'NO_STOCK':
         query['stock'] = 0
       else:
         query['stock'] = {'$gt': 0}

@@ -1,17 +1,18 @@
 from typing import Union, Tuple
 from datetime import datetime
+from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator
 from schemas.query_base import QueryBase
+from schemas.utils import parse_amount_query
 from models.purchase_model import Purchase
 from models.purchase_detail_model import PurchaseDetail
-from schemas.utils import parse_amount_query
 
 
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
   units: str = Field(...)
-  unit_purchase_price: float = Field(...)
-  unit_sale_price: float = Field(...)
+  unit_purchase_price: Decimal = Field(..., decimal_places=2)
+  unit_sale_price: Decimal = Field(..., decimal_places=2)
 
 
 class PurchaseCreate(BaseModel):

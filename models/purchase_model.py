@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from decimal import Decimal
 
 
 class Supplier(BaseModel):
@@ -17,5 +18,5 @@ class Product(BaseModel):
 class Purchase(BaseModel):
   id: str = Field(..., alias="_id")
   supplier: Supplier = Field(...)
-  total_amount: float = Field(...)
+  total_amount: Decimal = Field(..., decimal_places=2)
   created_at: datetime = None

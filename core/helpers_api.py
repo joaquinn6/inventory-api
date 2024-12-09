@@ -64,12 +64,14 @@ def raise_error_409(entity: str = 'Entity'):
       headers={"WWW-Authenticate": "Bearer"},
   )
 
+
 def raise_error_422(entity: str = 'Contraseña'):
-    raise HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,  # Usando 422 Unprocessable Entity
-        detail=f"{entity} actual incorrecta. No se puede cambiar la contraseña.",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+  raise HTTPException(
+      # Usando 422 Unprocessable Entity
+      status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+      detail=f"{entity} actual es incorrecta.",
+      headers={"WWW-Authenticate": "Bearer"},
+  )
 
 
 def raise_no_authorized():

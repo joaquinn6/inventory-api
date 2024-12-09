@@ -5,7 +5,7 @@ from core import helpers_api, var_mongo_provider as mongo_provider
 from core.auth import AuthService, OptionalHTTPBearer
 from services.user_service import UserService
 from models.token_model import Token
-from schemas.user_schema import UserCreate, UserLogin, UserResponse, UserQuery, UserListResponse, UserUpdate
+from schemas.user_schema import UserCreate, UserLogin, UserResponse, UserQuery, UserListResponse, UserUpdate, UserChangePassword
 from models.user_model import UserInfo
 from fastapi import Query
 
@@ -16,6 +16,21 @@ router = APIRouter(
     tags=["Usuario"],
     responses={404: {"description": "Not found"}},
 )
+
+@router.post(
+    "/users/{user_id}/password",
+    status_code=status.HTTP_200_OK,
+    summary="Change password"
+)
+async def change_password(user_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)):
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
+  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  if not entity:
+    helpers_api.raise_error_404('User')
+  service = UserService(mongo_provider.db)
+  service.change_password(user, entity)
+  return
 
 
 @router.post(

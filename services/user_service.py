@@ -3,7 +3,7 @@ import re
 import shortuuid
 from core import helpers_api
 from core.auth import AuthService
-from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate
+from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate, UserChangePassword
 
 
 class UserService():
@@ -81,3 +81,20 @@ class UserService():
         'order': query_params.order,
         'sort': query_params.sort
     }
+  def change_password(self, query_params: UserChangePassword, user: UserResponse) -> dict:
+    auth_service = AuthService()
+    plain_password = query_params.oldPassword
+    password = user['password']
+    if auth_service.verify_password(plain_password, password):
+      new_hashed_password = auth_service.get_password_hash(query_params.password)
+      self.update_user_password(user['_id'], new_hashed_password)
+    else:
+      helpers_api.raise_error_422()
+    return {}
+  
+  def update_user_password(self, id_user: str, new_hashed_password: str):
+    entity = {'password': new_hashed_password, 'updated_at': datetime.utcnow()}
+    entity = self._database.users.find_one_and_update(
+        {'_id': id_user}, {'$set': entity})  
+    return entity
+

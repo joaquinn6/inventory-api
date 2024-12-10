@@ -47,6 +47,10 @@ class SaleService():
   def _get_query(self, query_params: SaleQuery) -> dict:
     query = dict({})
 
+    if query_params.date:
+      query['created_at'] = {
+          '$gte': query_params.date[0], '$lte':  query_params.date[1]}
+
     if query_params.customer:
       query['customer'] = re.compile(f'.*{query_params.customer}.*', re.I)
 

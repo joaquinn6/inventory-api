@@ -1,7 +1,8 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from schemas.query_base import QueryBase
 from decimal import Decimal
+from schemas.utils import divide_list
 
 
 class ProductCreate(BaseModel):
@@ -44,6 +45,11 @@ class ProductQuery(QueryBase):
   code: str = None
   categories: list[str] = None
   stock: str = 'ALL'
+
+  @field_validator("categories", mode="before")
+  @classmethod
+  def divide_categories(cls, value):
+    return divide_list(value)
 
 
 class ProductListResponse(BaseModel):

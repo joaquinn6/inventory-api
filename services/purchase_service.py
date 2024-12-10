@@ -49,6 +49,10 @@ class PurchaseService():
   def _get_query(self, query_params: PurchaseQuery) -> dict:
     query = dict({})
 
+    if query_params.date:
+      query['created_at'] = {
+          '$gte': query_params.date[0], '$lte':  query_params.date[1]}
+
     if query_params.supplier:
       query['supplier._id'] = query_params.supplier
 

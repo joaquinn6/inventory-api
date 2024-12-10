@@ -1,9 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field
-from schemas.query_base import QueryBase
+from pydantic import BaseModel, Field, field_validator
 from models.purchase_model import Purchase
 from models.purchase_detail_model import PurchaseDetail
+from schemas.query_base import QueryBase
+from schemas.utils import divide_list, divide_format_query_dates
 
 
 class Product(BaseModel):
@@ -22,6 +23,16 @@ class PurchaseQuery(QueryBase):
   date: tuple[datetime, datetime] = None
   supplier: str = None
   amount: list[int] = [0, 10000]
+
+  @field_validator("date", mode="before")
+  @classmethod
+  def divide_dates(cls, value):
+    return divide_format_query_dates(value)
+
+  @field_validator("amount", mode="before")
+  @classmethod
+  def divide_amount(cls, value):
+    return divide_list(value)
 
 
 class PurchaseListResponse(BaseModel):

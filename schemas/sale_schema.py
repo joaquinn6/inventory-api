@@ -1,9 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from schemas.query_base import QueryBase
 from models.sale_model import Sale, PayWith
 from models.sale_detail_model import SaleDetail
+from schemas.utils import divide_format_query_dates, divide_list
 
 
 class Product(BaseModel):
@@ -23,6 +24,16 @@ class SaleQuery(QueryBase):
   customer: str = None
   pay_types: list[PayWith] = None
   amount: list[int] = [0, 10000]
+
+  @field_validator("date", mode="before")
+  @classmethod
+  def divide_dates(cls, value):
+    return divide_format_query_dates(value)
+
+  @field_validator("amount", mode="before")
+  @classmethod
+  def divide_amount(cls, value):
+    return divide_list(value)
 
 
 class SaleListResponse(BaseModel):

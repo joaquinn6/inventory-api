@@ -57,6 +57,14 @@ def raise_error_404(entity: str = 'Entity'):
   )
 
 
+def raise_error_400(message: str = 'Entity'):
+  raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=f"{message}",
+      headers={"WWW-Authenticate": "Bearer"},
+  )
+
+
 def raise_error_409(entity: str = 'Entity'):
   raise HTTPException(
       status_code=status.HTTP_409_CONFLICT,

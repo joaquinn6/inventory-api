@@ -4,6 +4,7 @@ import shortuuid
 
 from core import helpers_api
 from models.sale_model import Sale
+from models.product_model import Product as ProductEntity
 from schemas.sale_schema import SaleCreate, SaleQuery, Product, SaleWithDetail
 from services.sale_detail_service import SaleDetailService
 
@@ -13,11 +14,16 @@ class SaleService():
     self._database = database
 
   def create_sale(self, sale: SaleCreate) -> Sale:
+    is_valid, products = self._valid_products(sale)
+    if not is_valid:
+      helpers_api.raise_error_400(
+          f'No hay suficientes productos ({", ".join([product.name for product in products])}) para despachar la venta')
     entity = self._create_entity(sale=sale)
     entity['_id'] = shortuuid.uuid()
     entity['created_at'] = datetime.utcnow()
     self._database.sales.insert_one(entity)
     self._create_details(entity['_id'], sale.products)
+    self._update_products(sale.products)
     return Sale(**entity)
 
   def get_sale_by_id(self, id_sale: str) -> SaleWithDetail:
@@ -78,3 +84,26 @@ class SaleService():
     for product in products:
       service.create_detail(id_sale, product.id,
                             product.units, product.price)
+
+  def _valid_products(self, sale: SaleCreate) -> tuple[bool, list[ProductEntity] | None]:
+    products = list([])
+    for product in sale.products:
+      query = {
+          '_id': product.id,
+          'stock': {'$lt': product.units}
+      }
+      entity = self._database.products.find_one(query)
+      if entity:
+        products.append(ProductEntity(**product))
+    if len(products) > 0:
+      return False, products
+    return True, None
+
+  def _update_products(self, products: list[Product]):
+    for product in products:
+      new_values = {
+          "$inc": {
+              "units": -product.units
+          }
+      }
+      self._database.products.update_one({'_id': product.id}, new_values)

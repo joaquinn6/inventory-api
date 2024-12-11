@@ -94,7 +94,7 @@ class PurchaseService():
               "units": product.units
           }
       }
-      entity = self._database.suppliers.find_one_and_update(
+      entity = self._database.products.find_one_and_update(
           {'_id': product.id}, new_values, return_document=ReturnDocument.BEFORE)
       if entity['purchase_price'] != product.unit_purchase_price:
         service.create_history(

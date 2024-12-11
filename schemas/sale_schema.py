@@ -23,7 +23,7 @@ class SaleQuery(QueryBase):
   date: tuple[datetime, datetime] = None
   customer: str = None
   pay_types: list[PayWith] = None
-  amount: list[int] = [0, 10000]
+  amount: list[int] = [0, 5000]
 
   @field_validator("date", mode="before")
   @classmethod

@@ -28,7 +28,7 @@ class UserService():
         'email': user.email.lower(),
         'password': AuthService().get_password_hash(user.password),
         'roles': user.roles,
-        'full_name': user.full_name,
+        'full_name': user.full_name.title(),
         'active': True
     }
 

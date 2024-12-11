@@ -46,7 +46,7 @@ class SupplierService():
         'name': supplier.name.capitalize(),
         'code': supplier.code.upper(),
         'contact': {
-            'name': supplier.contact.name.capitalize(),
+            'name': supplier.contact.name.title(),
             'phone': supplier.contact.phone,
             'email': supplier.contact.email
         }

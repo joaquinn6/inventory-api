@@ -40,7 +40,7 @@ class SaleService():
   def _create_entity(self, sale: SaleCreate) -> dict:
     return {
         'pay_type': sale.pay_type,
-        'customer': sale.customer.capitalize(),
+        'customer': sale.customer.title(),
         'total_amount': sum([product.price * product.units for product in sale.products], 0)
     }
 
@@ -58,7 +58,7 @@ class SaleService():
       query['pay_type'] = {'$in': query_params.pay_types}
 
     if query_params.amount:
-      if query_params.amount[1] != 10000:
+      if query_params.amount[1] != 5000:
         query['total_amount'] = {
             '$gte': query_params.amount[0], '$lte':  query_params.amount[1]}
       else:

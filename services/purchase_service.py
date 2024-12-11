@@ -1,5 +1,6 @@
 from datetime import datetime
 from pymongo import ReturnDocument
+import pytz
 import shortuuid
 
 from core import helpers_api
@@ -51,7 +52,7 @@ class PurchaseService():
 
     if query_params.date:
       query['created_at'] = {
-          '$gte': query_params.date[0], '$lte':  query_params.date[1]}
+          '$gte': query_params.date[0].astimezone(pytz.utc), '$lte':  query_params.date[1].astimezone(pytz.utc)}
 
     if query_params.supplier:
       query['supplier._id'] = query_params.supplier

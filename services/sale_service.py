@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+import pytz
 import shortuuid
 
 from core import helpers_api
@@ -55,7 +56,7 @@ class SaleService():
 
     if query_params.date:
       query['created_at'] = {
-          '$gte': query_params.date[0], '$lte':  query_params.date[1]}
+          '$gte': query_params.date[0].astimezone(pytz.utc), '$lte':  query_params.date[1].astimezone(pytz.utc)}
 
     if query_params.customer:
       query['customer'] = re.compile(f'.*{query_params.customer}.*', re.I)

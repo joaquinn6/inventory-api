@@ -1,7 +1,6 @@
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
-from decimal import Decimal
 
 
 class PayWith(str, Enum):
@@ -13,7 +12,7 @@ class PayWith(str, Enum):
 
 class Sale(BaseModel):
   id: str = Field(..., alias="_id")
-  total_amount: Decimal = Field(..., decimal_places=2)
+  total_amount: float = Field(...)
   pay_type: PayWith = Field(...)
   customer: str = Field(...)
   created_at: datetime = None

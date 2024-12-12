@@ -1,16 +1,16 @@
-from datetime import datetime
-from decimal import Decimal
-from pydantic import BaseModel, Field, field_validator
-from schemas.query_base import QueryBase
-from models.sale_model import Sale, PayWith
-from models.sale_detail_model import SaleDetail
 from schemas.utils import divide_format_query_dates, divide_list
+from models.sale_detail_model import SaleDetail
+from models.sale_model import Sale, PayWith
+from schemas.query_base import QueryBase
+from pydantic import BaseModel, Field, field_validator
+from datetime import datetime
+float
 
 
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
   units: str = Field(...)
-  price: Decimal = Field(..., decimal_places=2)
+  price: float = Field(...)
 
 
 class SaleCreate(BaseModel):

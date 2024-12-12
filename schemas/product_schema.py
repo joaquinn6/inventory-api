@@ -1,9 +1,8 @@
-from models.product_model import Product
-from schemas.utils import divide_list
 from datetime import datetime
+from models.product_model import Product
 from pydantic import BaseModel, Field, field_validator
+from schemas.utils import divide_list
 from schemas.query_base import QueryBase
-float
 
 
 class ProductCreate(BaseModel):

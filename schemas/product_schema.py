@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, field_validator
 from schemas.query_base import QueryBase
 from decimal import Decimal
 from schemas.utils import divide_list
+from models.product_model import Product
 
 
 class ProductCreate(BaseModel):
@@ -54,4 +55,4 @@ class ProductQuery(QueryBase):
 
 class ProductListResponse(BaseModel):
   total: int = Field(...)
-  items: list[ProductCreateResponse] = Field(...)
+  items: list[Product] = Field(...)

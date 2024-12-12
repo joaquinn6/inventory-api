@@ -17,6 +17,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.post(
     "/users/{user_id}/password",
     status_code=status.HTTP_200_OK,
@@ -107,7 +108,7 @@ async def login(user: UserLogin = Body(...)) -> Token:
 @router.delete(
     "/users/{user_id}",
     status_code=status.HTTP_200_OK,
-    summary="Delete user by id"
+    summary="Desactive user by id"
 )
 async def user_delete_by_id(
         user_id: str,
@@ -120,3 +121,21 @@ async def user_delete_by_id(
   service = UserService(mongo_provider.db)
   delete_user = service.delete_user(user_id)
   return delete_user.model_dump(by_alias=True)
+
+
+@router.put(
+    "/users/{user_id}/active",
+    status_code=status.HTTP_200_OK,
+    summary="Active user by id"
+)
+async def user_active_by_id(
+        user_id: str,
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  if not entity:
+    helpers_api.raise_error_404('User')
+  service = UserService(mongo_provider.db)
+  active_user = service.active_user(user_id)
+  return active_user.model_dump(by_alias=True)

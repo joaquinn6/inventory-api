@@ -68,10 +68,15 @@ class UserService():
         {'_id': id_user}, {'$set': {'active': False}})
     return UserResponse(**entity)
 
+  def active_user(self, id_user: str) -> UserResponse:
+    entity = self._database.users.find_one_and_update(
+        {'_id': id_user}, {'$set': {'active': True}})
+    return UserResponse(**entity)
+
   def _update_entity(self, user: UserCreate) -> dict:
     return {
         'email': user.email,
-        'full_name': user.full_name,
+        'full_name': user.full_name.title(),
         'roles': user.roles,
     }
 

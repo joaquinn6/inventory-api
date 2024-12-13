@@ -9,9 +9,9 @@ float
 
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
-  units: str = Field(...)
-  unit_purchase_price: float = Field(...)
-  unit_sale_price: float = Field(...)
+  units: int = Field(...)
+  purchase_price: float = Field(...)
+  sale_price: float = Field(...)
 
 
 class PurchaseCreate(BaseModel):

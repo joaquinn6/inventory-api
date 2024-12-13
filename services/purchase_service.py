@@ -44,7 +44,7 @@ class PurchaseService():
   def _create_entity(self, purchase: PurchaseCreate) -> dict:
     return {
         'supplier': self._get_supplier(purchase.supplier_id),
-        'total_amount': sum([product.unit_purchase_price * product.units for product in purchase.products], 0)
+        'total_amount': sum([product.purchase_price * product.units for product in purchase.products], 0)
     }
 
   def _get_query(self, query_params: PurchaseQuery) -> dict:
@@ -88,8 +88,8 @@ class PurchaseService():
     for product in products:
       new_values = {
           "$set": {
-              "purchase_price": product.unit_purchase_price,
-              "sale_price": product.unit_sale_price
+              "purchase_price": product.purchase_price,
+              "sale_price": product.sale_price
           },
           "$inc": {
               "units": product.units
@@ -97,15 +97,15 @@ class PurchaseService():
       }
       entity = self._database.products.find_one_and_update(
           {'_id': product.id}, new_values, return_document=ReturnDocument.BEFORE)
-      if entity['purchase_price'] != product.unit_purchase_price:
+      if entity['purchase_price'] != product.purchase_price:
         service.create_history(
-            product.id, product.unit_purchase_price, PriceChangeType.PURCHASE)
-      if entity['sale_price'] != product.unit_sale_price:
+            product.id, product.purchase_price, PriceChangeType.PURCHASE)
+      if entity['sale_price'] != product.sale_price:
         service.create_history(
-            product.id, product.unit_sale_price, PriceChangeType.SALE)
+            product.id, product.sale_price, PriceChangeType.SALE)
 
   def _create_details(self, id_purchase: str, products: list[Product]):
     service = PurchaseDetailService(self._database)
     for product in products:
       service.create_detail(id_purchase, product.id,
-                            product.units, product.unit_purchase_price)
+                            product.units, product.purchase_price)

@@ -9,7 +9,7 @@ float
 
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
-  units: str = Field(...)
+  units: int = Field(...)
   price: float = Field(...)
 
 

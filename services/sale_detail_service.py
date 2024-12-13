@@ -8,7 +8,7 @@ class SaleDetailService():
 
   def create_detail(self, id_sale: str, product_id: str, units: int, price: float):
     entity = self._create_entity(id_sale, product_id, units, price)
-    entity['_id'] = shortuuid.uuid(),
+    entity['_id'] = shortuuid.uuid()
     entity['created_at'] = datetime.utcnow()
     self._database.sale_details.insert_one(entity)
 

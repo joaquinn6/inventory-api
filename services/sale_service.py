@@ -48,7 +48,7 @@ class SaleService():
     return {
         'pay_type': sale.pay_type,
         'customer': sale.customer.title(),
-        'total_amount': sum([product.price * product.units for product in sale.products], 0)
+        'total_amount': sum([product.sale_price * product.units for product in sale.products], 0)
     }
 
   def _get_query(self, query_params: SaleQuery) -> dict:
@@ -84,7 +84,7 @@ class SaleService():
     service = SaleDetailService(self._database)
     for product in products:
       service.create_detail(id_sale, product.id,
-                            product.units, product.price)
+                            product.units, product.sale_price)
 
   def _valid_products(self, sale: SaleCreate) -> tuple[bool, list[ProductEntity] | None]:
     products = list([])
@@ -95,7 +95,7 @@ class SaleService():
       }
       entity = self._database.products.find_one(query)
       if entity:
-        products.append(ProductEntity(**product))
+        products.append(ProductEntity(**entity))
     if len(products) > 0:
       return False, products
     return True, None
@@ -104,7 +104,7 @@ class SaleService():
     for product in products:
       new_values = {
           "$inc": {
-              "units": -product.units
+              "stock": -product.units
           }
       }
       self._database.products.update_one({'_id': product.id}, new_values)

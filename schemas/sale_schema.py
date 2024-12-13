@@ -10,18 +10,18 @@ float
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
   units: int = Field(...)
-  price: float = Field(...)
+  sale_price: float = Field(...)
 
 
 class SaleCreate(BaseModel):
   products: list[Product] = Field(..., max_length=8)
   pay_type: PayWith = Field(...)
-  customer: str = Field(...)
+  customer: str = ''
 
 
 class SaleQuery(QueryBase):
   date: tuple[datetime, datetime] = None
-  customer: str = None
+  customer: str = ''
   pay_types: list[PayWith] = None
   amount: list[int] = [0, 5000]
 

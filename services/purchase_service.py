@@ -92,7 +92,7 @@ class PurchaseService():
               "sale_price": product.sale_price
           },
           "$inc": {
-              "units": product.units
+              "stock": product.units
           }
       }
       entity = self._database.products.find_one_and_update(

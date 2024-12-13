@@ -14,6 +14,5 @@ class Sale(BaseModel):
   id: str = Field(..., alias="_id")
   total_amount: float = Field(...)
   pay_type: PayWith = Field(...)
-  customer: str = Field(...)
+  customer: str = ''
   created_at: datetime = None
-  updated_at: datetime = None

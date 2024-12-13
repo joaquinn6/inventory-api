@@ -41,7 +41,7 @@ class ProductService():
   def _create_entity(self, product: ProductCreate) -> dict:
     return {
         '_id': shortuuid.uuid(),
-        'name': product.name.capitalize(),
+        'name': product.name,
         'code': product.code.upper(),
         'categories': product.categories,
         'description': product.description.capitalize(),
@@ -52,7 +52,7 @@ class ProductService():
 
   def _update_entity(self, product: ProductCreate) -> dict:
     return {
-        'name': product.name.capitalize(),
+        'name': product.name,
         'code': product.code.upper(),
         'categories': product.categories,
         'description': product.description.capitalize(),

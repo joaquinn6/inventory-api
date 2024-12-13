@@ -16,4 +16,3 @@ class PurchaseDetail(BaseModel):
   unity_price: float = Field(...)
   total_price: float = Field(...)
   created_at: datetime = None
-  updated_at: datetime = None

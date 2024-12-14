@@ -48,7 +48,7 @@ class SaleService():
     return {
         'pay_type': sale.pay_type,
         'customer': sale.customer.title(),
-        'total_amount': sum([product.sale_price * product.units for product in sale.products], 0)
+        'total_amount': sum([round(product.sale_price * product.units, 2) for product in sale.products], 0)
     }
 
   def _get_query(self, query_params: SaleQuery) -> dict:

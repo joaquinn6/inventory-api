@@ -18,7 +18,7 @@ class SaleDetailService():
         'product': self._get_product(product_id),
         'units': units,
         'unity_price': price,
-        'total_price': price * units,
+        'total_price': round(price * units, 2),
     }
 
   def _get_product(self, product_id: str) -> dict:

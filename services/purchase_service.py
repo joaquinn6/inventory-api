@@ -44,7 +44,7 @@ class PurchaseService():
   def _create_entity(self, purchase: PurchaseCreate) -> dict:
     return {
         'supplier': self._get_supplier(purchase.supplier_id),
-        'total_amount': sum([product.purchase_price * product.units for product in purchase.products], 0)
+        'total_amount': sum([round(product.purchase_price * product.units, 2) for product in purchase.products], 0)
     }
 
   def _get_query(self, query_params: PurchaseQuery) -> dict:

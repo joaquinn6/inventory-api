@@ -16,7 +16,7 @@ class Product(BaseModel):
 
 class PurchaseCreate(BaseModel):
   supplier_id: str = Field(...)
-  products: list[Product] = Field(..., max_length=8)
+  products: list[Product] = Field(...)
 
 
 class PurchaseQuery(QueryBase):

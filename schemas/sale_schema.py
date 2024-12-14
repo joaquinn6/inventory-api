@@ -14,7 +14,7 @@ class Product(BaseModel):
 
 
 class SaleCreate(BaseModel):
-  products: list[Product] = Field(..., max_length=8)
+  products: list[Product] = Field(...)
   pay_type: PayWith = Field(...)
   customer: str = ''
 

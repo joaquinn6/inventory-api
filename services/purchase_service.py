@@ -6,10 +6,10 @@ import shortuuid
 from core import helpers_api
 from models.purchase_model import Purchase
 from models.price_history_model import PriceChangeType
+from models.product_model import TrendTypes
 from schemas.purchase_schema import PurchaseCreate, PurchaseQuery, Product, PurchaseWithDetail
 from services.purchase_detail_service import PurchaseDetailService
 from services.price_history_service import PriceHistoryService
-
 
 class PurchaseService():
   def __init__(self, database) -> None:
@@ -100,6 +100,10 @@ class PurchaseService():
       if entity['purchase_price'] != product.purchase_price:
         service.create_history(
             product.id, product.purchase_price, PriceChangeType.PURCHASE)
+        trend =  TrendTypes.UPWARD
+        if entity['purchase_price'] > product.purchase_price:
+          trend =TrendTypes.FALLING
+        self._database.products.update_one({'_id': product.id}, {'$set':{'trend': trend }})
       if entity['sale_price'] != product.sale_price:
         service.create_history(
             product.id, product.sale_price, PriceChangeType.SALE)

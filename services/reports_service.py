@@ -16,6 +16,10 @@ class ReportService():
     for sheet in self._sheets:
       df = pd.DataFrame(sheet['data'], columns=sheet['columns'])
       worksheet = workbook.create_sheet(sheet['name'])
+
+      renamed_columns = [sheet['columns'].get(col, col) for col in df.columns]
+      df.columns = renamed_columns
+      worksheet.append(df.columns.tolist())
       for row in df.itertuples(index=False):
         worksheet.append(row)
 

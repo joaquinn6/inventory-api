@@ -1,13 +1,17 @@
 """Routes y controllers de usuarios"""
+from datetime import datetime
+import io
+from fastapi import Query
 from fastapi import APIRouter, Depends, status, Body
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from core import helpers_api, var_mongo_provider as mongo_provider
 from core.auth import AuthService, OptionalHTTPBearer
 from services.user_service import UserService
 from models.token_model import Token
-from schemas.user_schema import UserCreate, UserLogin, UserResponse, UserQuery, UserListResponse, UserUpdate, UserChangePassword
 from models.user_model import UserInfo
-from fastapi import Query
+from schemas.user_schema import (UserCreate, UserLogin, UserResponse,
+                                 UserQuery, UserListResponse, UserUpdate, UserChangePassword)
 
 auth_scheme = OptionalHTTPBearer()
 
@@ -45,6 +49,29 @@ async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), 
   service = UserService(mongo_provider.db)
   new_user = service.create_user(user)
   return new_user.model_dump(by_alias=True)
+
+
+@router.get(
+    "/users/report",
+    status_code=status.HTTP_200_OK,
+    summary="Download users report"
+)
+async def get_users_report(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = UserService(mongo_provider.db)
+  excel = service.download_report(query_params)
+  now = datetime.utcnow()
+  filename = f'users-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
 
 
 @router.get(

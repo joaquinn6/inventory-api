@@ -16,6 +16,8 @@ python-dateutil = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
+pandas = "*"
+openpyxl = "*"
 
 [dev-packages]
 

@@ -1,10 +1,10 @@
 from datetime import datetime
 import re
-from pymongo import ReturnDocument
 import shortuuid
 from core import helpers_api
 from core.auth import AuthService
 from schemas.user_schema import UserResponse, UserCreate, UserQuery, UserUpdate, UserChangePassword
+from services.reports_service import ReportService
 
 
 class UserService():
@@ -104,3 +104,24 @@ class UserService():
     entity = {'password': new_hashed_password, 'updated_at': datetime.utcnow()}
     self._database.users.update_one({'_id': id_user}, {'$set': entity})
     return
+
+  def download_report(self, query_params: UserQuery) -> tuple:
+    query = self._get_query(query_params)
+    users = list(self._database.users.find(query))
+    columns = {
+        'full_name': 'Nombre',
+        'email': 'Email',
+        'roles': 'Roles',
+        'active': 'Activo',
+        'created_at': 'Creado',
+    }
+    self._format_data_reports(users)
+    service = ReportService(
+        [{'data': users, 'name': 'Usuarios', 'columns': columns}])
+    return service.generate_report()
+
+  def _format_data_reports(self, users: list):
+    for user in users:
+      user['roles'] = ", ".join(user['roles'])
+      user['active'] = 'SI' if user['active'] else 'NO'
+      user['created_at'] = user['created_at'].strftime("%d-%m-%Y %H:%M:%S")

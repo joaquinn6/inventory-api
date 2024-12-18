@@ -1,5 +1,8 @@
 """Routes y controllers de usuarios"""
+from datetime import datetime
+import io
 from fastapi import APIRouter, Depends, Query, status, Body
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from core.auth import AuthService, OptionalHTTPBearer
 from core import helpers_api, var_mongo_provider as mongo_provider
@@ -27,6 +30,29 @@ async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_schem
   service = PurchaseService(mongo_provider.db)
   new_purchase = service.create_purchase(purchase)
   return new_purchase.model_dump(by_alias=True)
+
+
+@router.get(
+    "/purchases/report-detail",
+    status_code=status.HTTP_200_OK,
+    summary="Get purchases"
+)
+async def get_purchases_report_detail(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = PurchaseService(mongo_provider.db)
+  excel = service.download_report(query_params, with_detail=True)
+  now = datetime.utcnow()
+  filename = f'purchases-detail-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
 
 
 @router.get(

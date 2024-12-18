@@ -10,8 +10,9 @@ from core.auth import AuthService, OptionalHTTPBearer
 from services.user_service import UserService
 from models.token_model import Token
 from models.user_model import UserInfo
-from schemas.user_schema import (UserCreate, UserLogin, UserResponse,
-                                 UserQuery, UserListResponse, UserUpdate, UserChangePassword)
+from schemas.user_schema import (
+    UserCreate, UserLogin, UserResponse,
+    UserQuery, UserListResponse, UserUpdate, UserChangePassword)
 
 auth_scheme = OptionalHTTPBearer()
 
@@ -62,7 +63,7 @@ async def get_users_report(query_params: UserQuery = Query(...), token: HTTPAuth
   service = UserService(mongo_provider.db)
   excel = service.download_report(query_params)
   now = datetime.utcnow()
-  filename = f'users-{now.strftime("%Y%m%d%H%M")}.xlsx'
+  filename = f'users-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(
       io.BytesIO(excel),

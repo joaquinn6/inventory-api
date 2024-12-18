@@ -10,6 +10,7 @@ from models.product_model import TrendTypes
 from schemas.purchase_schema import PurchaseCreate, PurchaseQuery, Product, PurchaseWithDetail
 from services.purchase_detail_service import PurchaseDetailService
 from services.price_history_service import PriceHistoryService
+from services.reports_service import ReportService
 
 
 class PurchaseService():
@@ -118,3 +119,50 @@ class PurchaseService():
     for product in products:
       service.create_detail(id_purchase, product.id,
                             product.units, product.purchase_price)
+
+  def download_report(self, query_params: PurchaseQuery, with_detail: bool = False) -> tuple:
+    query = self._get_query(query_params)
+    paginator = self._get_pagination(query_params)
+    purchases = helpers_api.get_paginator(
+        'purchases', query, paginator)['items']
+    columns = {
+        '_id': 'Código',
+        'created_at': 'Fecha',
+        'supplier.code': 'Código proveedor',
+        'supplier.name': 'Nombre proveedor',
+        'total_amount': 'Total (C$)',
+    }
+    self._format_purchase_reports(purchases)
+    sheets = list([])
+    sheets.append({'data': purchases, 'name': 'Compras', 'columns': columns})
+    if with_detail:
+      self._make_details_sheets(sheets, purchases)
+    service = ReportService(sheets)
+    return service.generate_report()
+
+  def _format_purchase_reports(self, purchases: list):
+    for purchase in purchases:
+      purchase['created_at'] = purchase['created_at'].strftime(
+          "%d-%m-%Y %H:%M:%S")
+      purchase['supplier.code'] = purchase['supplier']['code']
+      purchase['supplier.name'] = purchase['supplier']['name']
+
+  def _make_details_sheets(self, sheets: list, purchases: list):
+    columns = {
+        'product.code': 'Código producto',
+        'product.name': 'Fecha',
+        'units': 'Unidades',
+        'unity_price': 'Precio unitario (C$)',
+        'total_price': 'Total (C$)',
+    }
+    for purchase in purchases:
+      name = purchase['_id']
+      query = {'purchase_id': purchase['_id']}
+      details = list(self._database.purchase_details.find(query))
+      self._format_details_report(details)
+      sheets.append({'data': details, 'name': name, 'columns': columns})
+
+  def _format_details_report(self, details):
+    for detail in details:
+      detail['product.code'] = detail['product']['code']
+      detail['product.name'] = detail['product']['name']

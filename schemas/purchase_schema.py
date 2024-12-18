@@ -1,10 +1,9 @@
+from datetime import datetime
+from pydantic import BaseModel, Field, field_validator
 from schemas.utils import divide_list, divide_format_query_dates
 from schemas.query_base import QueryBase
 from models.purchase_detail_model import PurchaseDetail
 from models.purchase_model import Purchase
-from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
-float
 
 
 class Product(BaseModel):
@@ -21,6 +20,7 @@ class PurchaseCreate(BaseModel):
 
 class PurchaseQuery(QueryBase):
   date: tuple[datetime, datetime] = None
+  code: str = None
   supplier: str = None
   amount: list[int] = [0, 10000]
 

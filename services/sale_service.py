@@ -58,6 +58,9 @@ class SaleService():
       query['created_at'] = {
           '$gte': query_params.date[0].astimezone(pytz.utc), '$lte':  query_params.date[1].astimezone(pytz.utc)}
 
+    if query_params.code:
+      query['_id'] = query_params.code
+
     if query_params.customer:
       query['customer'] = re.compile(f'.*{query_params.customer}.*', re.I)
 

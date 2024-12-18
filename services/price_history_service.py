@@ -8,15 +8,19 @@ class PriceHistoryService():
   def __init__(self, database) -> None:
     self._database = database
 
-  def create_history(self, product_id: str, price: float, type_price: PriceChangeType):
-    entity = self._create_entity(product_id, price, type_price)
+  def create_history(self, product: dict, price: float, type_price: PriceChangeType):
+    entity = self._create_entity(product, price, type_price)
     entity['created_at'] = datetime.utcnow()
     self._database.prices_history.insert_one(entity)
 
-  def _create_entity(self, product_id: str, price: float, type_price: PriceChangeType) -> dict:
+  def _create_entity(self, product: dict, price: float, type_price: PriceChangeType) -> dict:
     return {
         '_id': shortuuid.uuid(),
-        'product_id': product_id,
+        'product': {
+            '_id': product['_id'],
+            'code': product['code'],
+            'name': product['name'],
+        },
         'type': type_price,
         'price': price,
         'date': datetime.utcnow()

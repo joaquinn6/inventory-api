@@ -20,6 +20,7 @@ class SaleCreate(BaseModel):
 
 class SaleQuery(QueryBase):
   date: tuple[datetime, datetime] = None
+  code: str = None
   customer: str = ''
   pay_types: list[PayWith] = None
   amount: list[int] = [0, 5000]

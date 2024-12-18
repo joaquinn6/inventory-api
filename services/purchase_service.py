@@ -11,6 +11,7 @@ from schemas.purchase_schema import PurchaseCreate, PurchaseQuery, Product, Purc
 from services.purchase_detail_service import PurchaseDetailService
 from services.price_history_service import PriceHistoryService
 
+
 class PurchaseService():
   def __init__(self, database) -> None:
     self._database = database
@@ -53,6 +54,9 @@ class PurchaseService():
     if query_params.date:
       query['created_at'] = {
           '$gte': query_params.date[0].astimezone(pytz.utc), '$lte':  query_params.date[1].astimezone(pytz.utc)}
+
+    if query_params.code:
+      query['_id'] = query_params.code
 
     if query_params.supplier:
       query['supplier._id'] = query_params.supplier
@@ -100,10 +104,11 @@ class PurchaseService():
       if entity['purchase_price'] != product.purchase_price:
         service.create_history(
             product.id, product.purchase_price, PriceChangeType.PURCHASE)
-        trend =  TrendTypes.UPWARD
+        trend = TrendTypes.UPWARD
         if entity['purchase_price'] > product.purchase_price:
-          trend =TrendTypes.FALLING
-        self._database.products.update_one({'_id': product.id}, {'$set':{'trend': trend }})
+          trend = TrendTypes.FALLING
+        self._database.products.update_one(
+            {'_id': product.id}, {'$set': {'trend': trend}})
       if entity['sale_price'] != product.sale_price:
         service.create_history(
             product.id, product.sale_price, PriceChangeType.SALE)

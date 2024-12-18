@@ -21,6 +21,7 @@ class PurchaseCreate(BaseModel):
 
 class PurchaseQuery(QueryBase):
   date: tuple[datetime, datetime] = None
+  code: str = None
   supplier: str = None
   amount: list[int] = [0, 10000]
 

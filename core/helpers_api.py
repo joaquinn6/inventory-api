@@ -1,6 +1,7 @@
+import pymongo
 from fastapi import HTTPException, status
 from core import var_mongo_provider as mongo_provider
-import pymongo
+from schemas.query_base import OrderSort
 
 
 def get_paginator(collection: str, query: dict, pagination: dict, fct=None, project=None) -> dict:
@@ -18,9 +19,9 @@ def get_paginator(collection: str, query: dict, pagination: dict, fct=None, proj
     sort = pagination['sort']
 
   if "order" in pagination:
-    if pagination['order'] == "1":
+    if pagination['order'] == OrderSort.ASCENDING:
       sort_direction = pymongo.ASCENDING
-    elif pagination['order'] == "-1":
+    elif pagination['order'] == OrderSort.DESCENDING:
       sort_direction = pymongo.DESCENDING
 
   coll = mongo_provider.db.get_collection(collection)

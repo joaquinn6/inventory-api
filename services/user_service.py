@@ -107,7 +107,8 @@ class UserService():
 
   def download_report(self, query_params: UserQuery) -> tuple:
     query = self._get_query(query_params)
-    users = list(self._database.users.find(query))
+    paginator = self._get_pagination(query_params)
+    users = helpers_api.get_paginator('users', query, paginator)['items']
     columns = {
         'full_name': 'Nombre',
         'email': 'Email',

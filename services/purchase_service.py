@@ -132,7 +132,19 @@ class PurchaseService():
         'supplier.name': 'Nombre proveedor',
         'total_amount': 'Total (C$)',
     }
+
+    total_amount = sum(purchase['total_amount'] for purchase in purchases)
     self._format_purchase_reports(purchases)
+
+    total_row = {
+        '_id': '',
+        'created_at': '',
+        'supplier.code': '',
+        'supplier.name': 'Total',
+        'total_amount': total_amount,
+    }
+    purchases.append(total_row)
+
     sheets = list([])
     sheets.append({'data': purchases, 'name': 'Compras', 'columns': columns})
     if with_detail:
@@ -160,6 +172,10 @@ class PurchaseService():
       query = {'purchase_id': purchase['_id']}
       details = list(self._database.purchase_details.find(query))
       self._format_details_report(details)
+
+      total_price = sum(detail['total_price'] for detail in details)
+      total_row = {'unity_price': 'Total', 'total_price': total_price}
+      details.append(total_row)
       sheets.append({'data': details, 'name': name, 'columns': columns})
 
   def _format_details_report(self, details):

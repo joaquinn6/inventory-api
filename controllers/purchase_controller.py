@@ -33,6 +33,29 @@ async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_schem
 
 
 @router.get(
+    "/purchases/report",
+    status_code=status.HTTP_200_OK,
+    summary="Get purchases"
+)
+async def get_purchases_report(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = PurchaseService(mongo_provider.db)
+  excel = service.download_report(query_params, with_detail=False)
+  now = datetime.utcnow()
+  filename = f'purchases-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
+
+
+@router.get(
     "/purchases/report-detail",
     status_code=status.HTTP_200_OK,
     summary="Get purchases"

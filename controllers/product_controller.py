@@ -1,11 +1,14 @@
 """Routes y controllers de usuarios"""
+import io
+from datetime import datetime
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.security import HTTPAuthorizationCredentials
 from core.auth import AuthService, OptionalHTTPBearer
 from core import helpers_api, var_mongo_provider as mongo_provider
+from fastapi.responses import StreamingResponse
 from models.product_model import Product
 from services.product_service import ProductService
-from schemas.product_schema import ProductCreate, ProductUpdate, ProductCreateResponse, ProductUpdateResponse, ProductQuery, ProductListResponse
+from schemas.product_schema import ProductCreate, ProductUpdate, ProductCreateResponse, ProductUpdateResponse, ProductQuery, ProductListResponse, ProductQuery
 auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
@@ -26,6 +29,28 @@ async def product_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme
   service = ProductService(mongo_provider.db)
   new_product = service.create_product(product)
   return new_product.model_dump(by_alias=True)
+
+@router.get(
+    "/products/report",
+    status_code=status.HTTP_200_OK,
+    summary="Download products report"
+)
+async def get_products_report(query_params: ProductQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = ProductService(mongo_provider.db)
+  excel = service.download_report(query_params)
+  now = datetime.utcnow()
+  filename = f'products-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
 
 
 @router.get(

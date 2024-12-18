@@ -5,7 +5,7 @@ from core import helpers_api
 from schemas.supplier_schema import SupplierQuery, SupplierCreate, SupplierUpdate
 from models.supplier_model import Supplier
 from pymongo import ReturnDocument
-
+from services.reports_service import ReportService
 
 class SupplierService():
   def __init__(self, database) -> None:
@@ -72,6 +72,29 @@ class SupplierService():
       query['contact.phone'] = query_params.contact_phone
 
     return query
+  
+  def download_report(self, query_params: SupplierQuery) -> tuple:
+    query = self._get_query(query_params)
+    suppliers = list(self._database.suppliers.find(query))
+    columns = {
+        'code': 'Código',
+        'name': 'Nombre',
+        'contact.name': 'Contacto',
+        'contact.email': 'Email',
+        'contact.phone': 'Telefono',
+        'created_at': 'Creado',
+    }
+    self._format_data_reports(suppliers)
+    service = ReportService(
+        [{'data': suppliers, 'name': 'Proveedores', 'columns': columns}])
+    return service.generate_report()
+  
+  def _format_data_reports(self, suppliers: list):
+    for supplier in suppliers:
+      supplier['contact.email'] = supplier['contact']['email']
+      supplier['contact.phone'] = supplier['contact']['phone']
+      supplier['contact.name'] = supplier['contact']['name']
+      supplier['created_at'] = supplier['created_at'].strftime("%d-%m-%Y %H:%M:%S")
 
   def _get_pagination(self, query_params: SupplierQuery) -> dict:
     return {

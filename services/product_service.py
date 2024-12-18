@@ -3,6 +3,7 @@ import shortuuid
 from datetime import datetime
 from core import helpers_api
 from schemas.product_schema import ProductCreateResponse, ProductUpdateResponse, ProductCreate, ProductQuery
+from services.reports_service import ReportService
 
 
 class ProductService():
@@ -74,6 +75,29 @@ class ProductService():
       else:
         query['stock'] = {'$gt': 0}
     return query
+  
+  def download_report(self, query_params: ProductQuery) -> tuple:
+    query = self._get_query(query_params)
+    products = list(self._database.products.find(query))
+    columns = {
+        'code': 'Código',
+        'name': 'Nombre',
+        'description': 'Descripción',
+        'categories': 'Categorías',
+        'purchase_price': 'Precio de compra',
+        'sale_price': 'Precio de venta',
+        'stock': 'Und.',
+        'created_at': 'Creado',
+    }
+    self._format_data_reports(products)
+    service = ReportService(
+        [{'data': products, 'name': 'Productos', 'columns': columns}])
+    return service.generate_report()
+  
+  def _format_data_reports(self, products: list):
+    for product in products:
+      product['categories'] = ", ".join(product['categories'])
+      product['created_at'] = product['created_at'].strftime("%d-%m-%Y %H:%M:%S")
 
   def _get_pagination(self, query_params: ProductQuery) -> dict:
     return {

@@ -78,7 +78,8 @@ class ProductService():
   
   def download_report(self, query_params: ProductQuery) -> tuple:
     query = self._get_query(query_params)
-    products = list(self._database.products.find(query))
+    paginator = self._get_pagination(query_params)
+    products = helpers_api.get_paginator('products', query, paginator)['items']
     columns = {
         'code': 'Código',
         'name': 'Nombre',

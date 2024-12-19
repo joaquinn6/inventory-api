@@ -75,7 +75,8 @@ class SupplierService():
   
   def download_report(self, query_params: SupplierQuery) -> tuple:
     query = self._get_query(query_params)
-    suppliers = list(self._database.suppliers.find(query))
+    paginator = self._get_pagination(query_params)
+    suppliers = helpers_api.get_paginator('suppliers', query, paginator)['items']
     columns = {
         'code': 'Código',
         'name': 'Nombre',

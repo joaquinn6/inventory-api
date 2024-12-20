@@ -128,7 +128,7 @@ class ProductService():
                     "$push": {
                         "date": {
                             "$dateToString": {
-                                "format": "%d/%m/%Y",
+                                "format": "%d/%m",
                                 "date": "$date"
                             }
                         },

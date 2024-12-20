@@ -1,4 +1,4 @@
-"""Routes y controllers de usuarios"""
+"""Routes y controllers de proveedores"""
 import io
 from datetime import datetime
 from fastapi.responses import StreamingResponse
@@ -29,6 +29,7 @@ async def supplier_post(token: HTTPAuthorizationCredentials = Depends(auth_schem
   service = SupplierService(mongo_provider.db)
   new_supplier = service.create_supplier(supplier)
   return new_supplier.model_dump(by_alias=True)
+
 
 @router.get(
     "/suppliers/report",

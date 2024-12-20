@@ -1,4 +1,4 @@
-"""Routes y controllers de usuarios"""
+"""Routes y controllers de productos"""
 import io
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, status, Body

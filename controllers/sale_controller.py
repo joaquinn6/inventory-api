@@ -1,4 +1,4 @@
-"""Routes y controllers de usuarios"""
+"""Routes y controllers de ventas"""
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.security import HTTPAuthorizationCredentials
 from core.auth import AuthService, OptionalHTTPBearer

@@ -1,4 +1,4 @@
-"""Routes y controllers de usuarios"""
+"""Routes y controllers de configuración"""
 from datetime import datetime
 from io import BytesIO
 from fastapi import APIRouter, Depends, status, UploadFile, File

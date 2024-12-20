@@ -104,7 +104,7 @@ class PurchaseService():
           {'_id': product.id}, new_values, return_document=ReturnDocument.BEFORE)
       if entity['purchase_price'] != product.purchase_price:
         service.create_history(
-            entity, product.purchase_price, PriceChangeType.PURCHASE)
+            product.id, product.purchase_price, PriceChangeType.PURCHASE)
         trend = TrendTypes.UPWARD
         if entity['purchase_price'] > product.purchase_price:
           trend = TrendTypes.FALLING
@@ -112,7 +112,7 @@ class PurchaseService():
             {'_id': product.id}, {'$set': {'trend': trend}})
       if entity['sale_price'] != product.sale_price:
         service.create_history(
-            entity, product.sale_price, PriceChangeType.SALE)
+            product.id, product.sale_price, PriceChangeType.SALE)
 
   def _create_details(self, id_purchase: str, products: list[Product]):
     service = PurchaseDetailService(self._database)

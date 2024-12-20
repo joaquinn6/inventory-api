@@ -75,7 +75,7 @@ class ProductService():
       else:
         query['stock'] = {'$gt': 0}
     return query
-  
+
   def download_report(self, query_params: ProductQuery) -> tuple:
     query = self._get_query(query_params)
     paginator = self._get_pagination(query_params)
@@ -94,11 +94,12 @@ class ProductService():
     service = ReportService(
         [{'data': products, 'name': 'Productos', 'columns': columns}])
     return service.generate_report()
-  
+
   def _format_data_reports(self, products: list):
     for product in products:
       product['categories'] = ", ".join(product['categories'])
-      product['created_at'] = product['created_at'].strftime("%d-%m-%Y %H:%M:%S")
+      product['created_at'] = product['created_at'].strftime(
+          "%d-%m-%Y %H:%M:%S")
 
   def _get_pagination(self, query_params: ProductQuery) -> dict:
     return {
@@ -107,3 +108,43 @@ class ProductService():
         'order': query_params.order,
         'sort': query_params.sort
     }
+
+  def get_prices_graph(self, id_product: str) -> dict:
+    pipeline = [
+        {
+            "$match": {
+                "type": "PURCHASE",
+                "product_id": id_product
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "year": {
+                        "$year": "$date"
+                    }
+                },
+                "prices": {
+                    "$push": {
+                        "date": {
+                            "$dateToString": {
+                                "format": "%d/%m/%Y",
+                                "date": "$date"
+                            }
+                        },
+                        "price": "$price"
+                    }
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "year": "$_id.year",
+                "product_id": "$_id.product_id",
+                "prices": 1
+            }
+        }
+    ]
+    results = self._database.prices_history.aggregate(pipeline)
+    return list(results)

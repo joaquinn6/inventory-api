@@ -62,14 +62,16 @@ async def get_products_report(query_params: ProductQuery = Query(...), token: HT
     status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
-async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Product:
+async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> dict:
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
   entity = mongo_provider.db.products.find_one({'_id': product_id})
   if not entity:
     helpers_api.raise_error_404('Product')
   product = Product(**entity)
-  return product.model_dump(by_alias=True)
+  service = ProductService(mongo_provider.db)
+  product_prices = service.get_prices_graph(product.id)
+  return {**product.model_dump(by_alias=True), 'graph': product_prices}
 
 
 @router.put(

@@ -118,6 +118,11 @@ class ProductService():
             }
         },
         {
+            "$sort": {
+                "date": 1
+            }
+        },
+        {
             "$group": {
                 "_id": {
                     "year": {

@@ -8,7 +8,7 @@ from models.sale_model import Sale
 from models.product_model import Product as ProductEntity
 from schemas.sale_schema import SaleCreate, SaleQuery, Product, SaleWithDetail
 from services.sale_detail_service import SaleDetailService
-
+from services.reports_service import ReportService
 
 class SaleService():
   def __init__(self, database) -> None:
@@ -88,6 +88,65 @@ class SaleService():
     for product in products:
       service.create_detail(id_sale, product.id,
                             product.units, product.sale_price)
+  
+  def download_report(self, query_params: SaleQuery, with_detail: bool = False) -> tuple:
+    query = self._get_query(query_params)
+    paginator = self._get_pagination(query_params)
+    sales = helpers_api.get_paginator(
+        'sales', query, paginator)['items']
+    columns = {
+        '_id': 'Código',
+        'created_at': 'Fecha',
+        'customer': 'Cliente',
+        'pay_type': 'Forma de pago',
+        'total_amount': 'Cantidad total (C$)',
+    }
+
+    self._format_sale_reports(sales)
+
+    total_amount = sum(sale['total_amount'] for sale in sales)
+    total_row = {'name': 'Total', 'total_amount': total_amount}
+    sales.append(total_row)
+
+    sheets = list([])
+    sheets.append({'data': sales, 'name': 'ventas', 'columns': columns})
+    if with_detail:
+      self._make_details_sheets(sheets, sales)
+    service = ReportService(sheets)
+    return service.generate_report()
+  
+  def _format_sale_reports(self, sales: list):
+    for sale in sales:
+      sale['created_at'] = sale['created_at'].strftime(
+          "%d-%m-%Y %H:%M:%S")
+      sale['code'] = ['code']
+      sale['name'] = ['name']
+  
+  def _make_details_sheets(self, sheets: list, sales: list):
+    columns = {
+        'product.code': 'Código producto',
+        'product.name': 'Nombre',
+        'units': 'Unidades',
+        'unity_price': 'Precio por unidad',
+        'total_price': 'Precio total',
+    }
+    for sale in sales:
+      if not '_id' in sale:
+        continue
+      name = sale['_id']
+      query = {'sale_id': sale['_id']}
+      details = list(self._database.sale_details.find(query))
+      self._format_details_report(details)
+
+      total_price = sum(detail['total_price'] for detail in details)
+      total_row = {'unity_price': 'Total', 'total_price': total_price}
+      details.append(total_row)
+      sheets.append({'data': details, 'name': name, 'columns': columns})
+  
+  def _format_details_report(self, details):
+    for detail in details:
+      detail['product.code'] = detail['product']['code']
+      detail['product.name'] = detail['product']['name']
 
   def _valid_products(self, sale: SaleCreate) -> tuple[bool, list[ProductEntity] | None]:
     products = list([])

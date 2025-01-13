@@ -1,12 +1,15 @@
 """Routes y controllers de ventas"""
+from datetime import datetime
+import io
 from fastapi import APIRouter, Depends, Query, status, Body
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from core.auth import AuthService, OptionalHTTPBearer
 from core import helpers_api, var_mongo_provider as mongo_provider
 from models.sale_model import Sale
 from services.sale_service import SaleService
 from schemas.sale_schema import (
-    SaleCreate, SaleQuery, SaleListResponse, SaleWithDetail)
+    SaleCreate, SaleQuery, SaleListResponse, SaleWithDetail, SaleQuery)
 auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
@@ -27,6 +30,50 @@ async def sale_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), 
   service = SaleService(mongo_provider.db)
   new_sale = service.create_sale(sale)
   return new_sale.model_dump(by_alias=True)
+
+@router.get(
+    "/sales/report",
+    status_code=status.HTTP_200_OK,
+    summary="Get purchases"
+)
+async def get_sales_report(query_params: SaleQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = SaleService(mongo_provider.db)
+  excel = service.download_report(query_params, with_detail=False)
+  now = datetime.utcnow()
+  filename = f'sales-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
+
+@router.get(
+    "/sales/report-detail",
+    status_code=status.HTTP_200_OK,
+    summary="Get purchases"
+)
+async def get_sales_report_detail(query_params: SaleQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = SaleService(mongo_provider.db)
+  excel = service.download_report(query_params, with_detail=True)
+  now = datetime.utcnow()
+  filename = f'sales-detail-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
+
+  response = StreamingResponse(
+      io.BytesIO(excel),
+      media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
 
 
 @router.get(

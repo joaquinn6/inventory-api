@@ -1,43 +1,38 @@
-import re
 import shortuuid
-from datetime import datetime
 from core import helpers_api
-from schemas.product_schema import ProductCreateResponse, ProductUpdateResponse, ProductCreate, ProductQuery
+from models.product_model import Product
+from repositories.product_repository import ProductRepository
+from repositories.price_history_repository import PriceHistoryRepository
+from schemas.product_schema import ProductCreate, ProductQuery
 from services.reports_service import ReportService
 
 
 class ProductService():
-  def __init__(self, database) -> None:
-    self._database = database
+  def __init__(self) -> None:
+    self._repo = ProductRepository()
+    self._repo_history = PriceHistoryRepository()
 
-  def create_product(self, product: ProductCreate) -> ProductCreateResponse:
-    exist_product = self._database.products.find_one(
-        {'code': product.code.upper()})
+  def create_product(self, product: Product) -> Product:
+    exist_product = self._repo.exist_by_code(product.code.upper())
     if exist_product:
-      helpers_api.raise_error_409('Code')
+      helpers_api.raise_error_409('Código')
+    product.new()
+    self._repo.insert(product)
+    return product
 
-    entity = self._create_entity(product=product)
-    entity['created_at'] = datetime.utcnow()
-    entity['updated_at'] = datetime.utcnow()
-    self._database.products.insert_one(entity)
-    return ProductCreateResponse(**entity)
+  def update_product(self, exist: Product, update: Product) -> Product:
+    exist_product = self._repo.get_by_code(update.code.upper())
+    if exist_product and exist_product.id != exist.id:
+      helpers_api.raise_error_409('Código')
 
-  def update_product(self, id_product: str, product: ProductCreate) -> ProductUpdateResponse:
-    exist_product = self._database.products.find_one(
-        {'code': product.code.upper(), '_id': {'$ne': id_product}})
-    if exist_product:
-      helpers_api.raise_error_409('Code')
+    exist.update(update)
 
-    entity = self._update_entity(product=product)
-    entity['updated_at'] = datetime.utcnow()
-    self._database.products.update_one({'_id': id_product}, {'$set': entity})
-    entity['_id'] = id_product
-    return ProductUpdateResponse(**entity)
+    self._repo.update_by_id(exist)
+    return exist
 
-  def get_query(self, query_params: ProductQuery) -> tuple:
-    pagination = self._get_pagination(query_params)
-    query = self._get_query(query_params)
-    return query, pagination
+  def get_paged(self, query_params: ProductQuery) -> tuple:
+    # TODO: get y get paged order sort, limit... en repo
+    return
 
   def _create_entity(self, product: ProductCreate) -> dict:
     return {
@@ -51,35 +46,8 @@ class ProductService():
         'stock': 0
     }
 
-  def _update_entity(self, product: ProductCreate) -> dict:
-    return {
-        'name': product.name,
-        'code': product.code.upper(),
-        'categories': product.categories,
-        'description': product.description.capitalize(),
-    }
-
-  def _get_query(self, query_params: ProductQuery) -> dict:
-    query = dict({})
-
-    if query_params.name:
-      query['name'] = re.compile(f'.*{query_params.name}.*', re.I)
-
-    if query_params.code:
-      query['code'] = re.compile(f'{query_params.code.upper()}.*', re.I)
-    if query_params.categories:
-      query['categories'] = {'$in': query_params.categories}
-    if query_params.stock != 'ALL':
-      if query_params.stock == 'NO_STOCK':
-        query['stock'] = 0
-      else:
-        query['stock'] = {'$gt': 0}
-    return query
-
   def download_report(self, query_params: ProductQuery) -> tuple:
-    query = self._get_query(query_params)
-    paginator = self._get_pagination(query_params)
-    products = helpers_api.get_paginator('products', query, paginator)['items']
+    products = self._repo.get(query_params.get_query())
     columns = {
         'code': 'Código',
         'name': 'Nombre',
@@ -90,24 +58,9 @@ class ProductService():
         'stock': 'Und.',
         'created_at': 'Creado',
     }
-    self._format_data_reports(products)
     service = ReportService(
-        [{'data': products, 'name': 'Productos', 'columns': columns}])
+        [{'data': [product.to_report() for product in products], 'name': 'Productos', 'columns': columns}])
     return service.generate_report()
-
-  def _format_data_reports(self, products: list):
-    for product in products:
-      product['categories'] = ", ".join(product['categories'])
-      product['created_at'] = product['created_at'].strftime(
-          "%d-%m-%Y %H:%M:%S")
-
-  def _get_pagination(self, query_params: ProductQuery) -> dict:
-    return {
-        'page': query_params.page,
-        'limit': query_params.limit,
-        'order': query_params.order,
-        'sort': query_params.sort
-    }
 
   def get_prices_graph(self, id_product: str) -> dict:
     pipeline = [
@@ -151,5 +104,5 @@ class ProductService():
             }
         }
     ]
-    results = self._database.prices_history.aggregate(pipeline)
+    results = self._repo_history.aggregate(pipeline)
     return list(results)

@@ -12,3 +12,11 @@ class QueryBase(BaseModel):
   limit: int = Field(default=0)
   order: OrderSort = OrderSort.DESCENDING
   sort: str = Field(default='created_at')
+
+  def get_pagination(self) -> dict:
+    return {
+        'page': self.page,
+        'limit': self.limit,
+        'order': self.order,
+        'sort': self.sort
+    }

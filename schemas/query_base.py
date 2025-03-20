@@ -1,10 +1,11 @@
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import pymongo
 
 
-class OrderSort(str, Enum):
-  ASCENDING = "ascending"
-  DESCENDING = "descending"
+class OrderSort(int, Enum):
+  ASCENDING = pymongo.ASCENDING
+  DESCENDING = pymongo.DESCENDING
 
 
 class QueryBase(BaseModel):
@@ -20,3 +21,10 @@ class QueryBase(BaseModel):
         'order': self.order,
         'sort': self.sort
     }
+
+  @field_validator("order", mode="before")
+  @classmethod
+  def order_parser(cls, value):
+    if value == 'ascending':
+      return OrderSort.ASCENDING
+    return OrderSort.DESCENDING

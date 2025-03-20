@@ -1,5 +1,6 @@
 import shortuuid
 from core import helpers_api
+from models.entity import PagedEntity
 from models.product_model import Product
 from repositories.product_repository import ProductRepository
 from repositories.price_history_repository import PriceHistoryRepository
@@ -30,9 +31,8 @@ class ProductService():
     self._repo.update_by_id(exist)
     return exist
 
-  def get_paged(self, query_params: ProductQuery) -> tuple:
-    # TODO: get y get paged order sort, limit... en repo
-    return
+  def get_paged(self, query_params: ProductQuery) -> PagedEntity:
+    return self._repo.get_paged(query_params.get_query(), query_params.page, query_params.limit, query_params.sort, query_params.order)
 
   def _create_entity(self, product: ProductCreate) -> dict:
     return {
@@ -47,7 +47,8 @@ class ProductService():
     }
 
   def download_report(self, query_params: ProductQuery) -> tuple:
-    products = self._repo.get(query_params.get_query())
+    products = self._repo.get(
+        query_params.get_query(), query_params.sort, query_params.order)
     columns = {
         'code': 'Código',
         'name': 'Nombre',

@@ -19,8 +19,11 @@ class RepositoryBase(Generic[T]):
   def count(self, query: dict):
     return self._collection.count_documents(query)
 
-  def get(self, query: dict) -> List[T]:
-    cursor = self._collection.find(query)
+  def get(self, query: dict,  sort: str = '', order: int = pymongo.DESCENDING) -> List[T]:
+    order = [('_id', pymongo.DESCENDING)]
+    if sort:
+      order = [(sort, order)]
+    cursor = self._collection.find(query).sort(order)
     return [self._mapper(entity) for entity in cursor]
 
   def get_one(self, query: dict) -> T | None:
@@ -35,15 +38,19 @@ class RepositoryBase(Generic[T]):
       return None
     return self._mapper(res)
 
-  def get_paged(self, query: dict, skips: int, limit: int | None) -> PagedEntity:
+  def get_paged(self, query: dict, page: int, limit: int, sort: str = '', direction: int = pymongo.DESCENDING) -> PagedEntity:
+    total = self.count(query)
     order = [('_id', pymongo.DESCENDING)]
-    cursor = None
-    if not limit:
-      cursor = self._collection.find(query).sort(order)
-    else:
-      cursor = self._collection.find(query).sort(
-          order).skip(skips).limit(limit)
-    return [self._mapper(entity) for entity in cursor]
+    if sort:
+      order = [(sort, direction)]
+
+    skips = 0
+    if page > 1:
+      skips = limit * (page - 1)
+
+    cursor = self._collection.find(query).sort(
+        order).skip(skips).limit(limit)
+    return PagedEntity(total=total, items=[self._mapper(entity) for entity in cursor])
 
   def insert(self, entity: T):
     self._collection.insert_one(entity.model_dump(by_alias=True))

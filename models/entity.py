@@ -40,6 +40,6 @@ class Entity(BaseModel):
 T = TypeVar("T")
 
 
-class PagedEntity(BaseModel):
+class PagedEntity(BaseModel, Generic[T]):
   total: int = Field(...)
-  items: List[Generic[T]] = Field(...)
+  items: List[T] = Field(...)

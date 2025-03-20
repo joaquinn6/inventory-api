@@ -103,6 +103,6 @@ async def product_update_by_id(
 async def get_products(query_params: ProductQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PagedEntity:
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
-  products = PagedEntity(
-      **helpers_api.get_paginator('products', query_params.get_query(), query_params.get_pagination()))
+  service = ProductService()
+  products = service.get_paged(query_params)
   return products.model_dump(by_alias=True)

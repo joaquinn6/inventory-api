@@ -62,7 +62,7 @@ async def get_products_report(query_params: ProductQuery = Query(...), token: HT
     status_code=status.HTTP_200_OK,
     summary="Get product by id"
 )
-async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> dict:
+async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Product:
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
   repo = ProductRepository()
@@ -71,7 +71,8 @@ async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials
     helpers_api.raise_error_404('Producto')
   service = ProductService()
   product_prices = service.get_prices_graph(entity.id)
-  return {**entity.model_dump(by_alias=True), 'graph': product_prices}
+  entity.graph = product_prices
+  return entity.model_dump(by_alias=True)
 
 
 @router.put(

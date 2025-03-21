@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 from pydantic import Field
 
 from models.entity import Entity
@@ -19,6 +20,7 @@ class Product(Entity):
   sale_price: float = Field(default=0)
   stock: int = Field(default=0)
   trend: TrendTypes = TrendTypes.EQUAL
+  graph: List[dict] = Field(default=[])
 
   def new(self):
     self.code = self.code.upper()

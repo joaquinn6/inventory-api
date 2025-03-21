@@ -59,8 +59,8 @@ class ProductService():
         'stock': 'Und.',
         'created_at': 'Creado',
     }
-    service = ReportService(
-        [{'data': [product.to_report() for product in products], 'name': 'Productos', 'columns': columns}])
+    service = ReportService([{'data': [product.to_report(
+    ) for product in products], 'name': 'Productos', 'columns': columns}])
     return service.generate_report()
 
   def get_prices_graph(self, id_product: str) -> dict:

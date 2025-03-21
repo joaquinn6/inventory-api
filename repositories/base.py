@@ -19,10 +19,10 @@ class RepositoryBase(Generic[T]):
   def count(self, query: dict):
     return self._collection.count_documents(query)
 
-  def get(self, query: dict,  sort: str = '', order: int = pymongo.DESCENDING) -> List[T]:
+  def get(self, query: dict,  sort: str = '', direction: int = pymongo.DESCENDING) -> List[T]:
     order = [('_id', pymongo.DESCENDING)]
     if sort:
-      order = [(sort, order)]
+      order = [(sort, direction)]
     cursor = self._collection.find(query).sort(order)
     return [self._mapper(entity) for entity in cursor]
 

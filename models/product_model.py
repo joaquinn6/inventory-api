@@ -38,3 +38,4 @@ class Product(Entity):
     product_dict = self.model_dump(by_alias=True)
     product_dict['categories'] = ", ".join(self.categories)
     product_dict['created_at'] = self.created_at.strftime("%d-%m-%Y %H:%M:%S")
+    return product_dict

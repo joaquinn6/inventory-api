@@ -5,14 +5,15 @@ from fastapi import Query
 from fastapi import APIRouter, Depends, status, Body
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
-from core import helpers_api, var_mongo_provider as mongo_provider
+
+from core import helpers_api
 from core.auth import AuthService, OptionalHTTPBearer
+from repositories.user_repository import UserRepository
 from services.user_service import UserService
+from models.entity import PagedEntity
 from models.token_model import Token
-from models.user_model import UserInfo
-from schemas.user_schema import (
-    UserCreate, UserLogin, UserResponse,
-    UserQuery, UserListResponse, UserUpdate, UserChangePassword)
+from models.user_model import User, UserInfo
+from schemas.user_schema import UserLogin, UserQuery, UserChangePassword
 
 auth_scheme = OptionalHTTPBearer()
 
@@ -28,14 +29,16 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="Change password"
 )
-async def change_password(user_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserChangePassword = Body(...)):
+async def change_password(user_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme), body: UserChangePassword = Body(...)):
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
-  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  repo = UserRepository()
+  entity = repo.get_by_id(user_id)
   if not entity:
-    helpers_api.raise_error_404('User')
-  service = UserService(mongo_provider.db)
-  service.change_password(user, entity)
+    helpers_api.raise_error_404('Usuario')
+
+  service = UserService()
+  service.change_password(body, entity)
   return
 
 
@@ -44,10 +47,10 @@ async def change_password(user_id: str, token: HTTPAuthorizationCredentials = De
     status_code=status.HTTP_201_CREATED,
     summary="Create a new user"
 )
-async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: UserCreate = Body(...)) -> UserResponse:
+async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), user: User = Body(...)) -> UserInfo:
   if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
-  service = UserService(mongo_provider.db)
+  service = UserService()
   new_user = service.create_user(user)
   return new_user.model_dump(by_alias=True)
 
@@ -60,7 +63,7 @@ async def user_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), 
 async def get_users_report(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = UserService(mongo_provider.db)
+  service = UserService()
   excel = service.download_report(query_params)
   now = datetime.utcnow()
   filename = f'users-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
@@ -83,11 +86,11 @@ async def get_users_report(query_params: UserQuery = Query(...), token: HTTPAuth
 async def user_get_by_id(user_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserInfo:
   if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
-  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  repo = UserRepository()
+  entity = repo.get_by_id(user_id)
   if not entity:
-    helpers_api.raise_error_404('User')
-  user = UserInfo(**entity)
-  return user.model_dump(by_alias=True)
+    helpers_api.raise_error_404('Usuario')
+  return UserInfo.from_dict(entity.model_dump(by_alias=True)).model_dump(by_alias=True)
 
 
 @router.put(
@@ -97,31 +100,31 @@ async def user_get_by_id(user_id: str, token: HTTPAuthorizationCredentials = Dep
 )
 async def user_update_by_id(
         user_id: str,
-        user: UserUpdate = Body(...),
-        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserResponse:
+        user: User = Body(...),
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserInfo:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  repo = UserRepository()
+  entity = repo.get_by_id(user_id)
   if not entity:
-    helpers_api.raise_error_404('User')
-  service = UserService(mongo_provider.db)
-  update_user = service.update_user(user_id, user)
+    helpers_api.raise_error_404('Proveedor')
+
+  service = UserService()
+  update_user = service.update_user(entity, user)
   return update_user.model_dump(by_alias=True)
 
 
 @router.get(
     "/users",
     status_code=status.HTTP_200_OK,
-    summary="Get all users"
+    summary="Get users"
 )
-async def get_users(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserListResponse:
+async def get_users(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PagedEntity:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = UserService(mongo_provider.db)
-  query, pagination = service.get_query(query_params)
-  users = UserListResponse(
-      **helpers_api.get_paginator('users', query, pagination))
-  return users.model_dump(by_alias=True)
+  service = UserService()
+  suppliers = service.get_paged(query_params)
+  return suppliers.model_dump(by_alias=True)
 
 
 @router.post(
@@ -140,14 +143,15 @@ async def login(user: UserLogin = Body(...)) -> Token:
 )
 async def user_delete_by_id(
         user_id: str,
-        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserResponse:
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserInfo:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  repo = UserRepository()
+  entity = repo.get_by_id(user_id)
   if not entity:
-    helpers_api.raise_error_404('User')
-  service = UserService(mongo_provider.db)
-  delete_user = service.delete_user(user_id)
+    helpers_api.raise_error_404('Usuario')
+  service = UserService()
+  delete_user = service.delete_user(entity)
   return delete_user.model_dump(by_alias=True)
 
 
@@ -158,12 +162,13 @@ async def user_delete_by_id(
 )
 async def user_active_by_id(
         user_id: str,
-        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserResponse:
+        token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UserInfo:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  entity = mongo_provider.db.users.find_one({'_id': user_id})
+  repo = UserRepository()
+  entity = repo.get_by_id(user_id)
   if not entity:
-    helpers_api.raise_error_404('User')
-  service = UserService(mongo_provider.db)
-  active_user = service.active_user(user_id)
+    helpers_api.raise_error_404('Usuario')
+  service = UserService()
+  active_user = service.active_user(entity)
   return active_user.model_dump(by_alias=True)

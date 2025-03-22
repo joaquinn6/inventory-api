@@ -1,8 +1,8 @@
 """Routes y controllers de dashboard"""
 from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPAuthorizationCredentials
+from core import helpers_api
 from core.auth import AuthService, OptionalHTTPBearer
-from core import helpers_api, var_mongo_provider as mongo_provider
 from services.dashboard_service import DashboardService
 auth_scheme = OptionalHTTPBearer()
 
@@ -21,6 +21,6 @@ router = APIRouter(
 async def get_sales(token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> dict:
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
-  service = DashboardService(mongo_provider.db)
+  service = DashboardService()
   data = service.get_dashboard()
   return data

@@ -1,6 +1,5 @@
 from datetime import datetime
 import re
-from models.product_model import Product
 from pydantic import BaseModel, Field, field_validator
 from schemas.utils import divide_list
 from schemas.query_base import QueryBase
@@ -68,8 +67,3 @@ class ProductQuery(QueryBase):
       else:
         query['stock'] = {'$gt': 0}
     return query
-
-
-class ProductListResponse(BaseModel):
-  total: int = Field(...)
-  items: list[Product] = Field(...)

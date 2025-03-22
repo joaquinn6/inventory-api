@@ -1,5 +1,4 @@
-from pydantic import BaseModel, Field
-from models.supplier_model import Supplier
+import re
 from schemas.query_base import QueryBase
 
 
@@ -10,25 +9,23 @@ class SupplierQuery(QueryBase):
   contact_email: str = None
   contact_phone: str = None
 
+  def get_query(self) -> dict:
+    query = dict({})
 
-class Contact(BaseModel):
-  name: str = ''
-  email: str = ''
-  phone: str = ''
+    if self.name:
+      query['name'] = re.compile(f'.*{self.name}.*', re.I)
 
+    if self.code:
+      query['code'] = re.compile(f'{self.code.upper()}.*', re.I)
 
-class SupplierCreate(BaseModel):
-  name: str = Field(...)
-  code: str = Field(..., max_length=8)
-  contact: Contact = Field(...)
+    if self.contact_name:
+      query['contact.name'] = re.compile(
+          f'.*{self.contact_name}.*', re.I)
 
+    if self.contact_email:
+      query['contact.email'] = self.contact_email
 
-class SupplierUpdate(BaseModel):
-  name: str = Field(...)
-  code: str = Field(..., max_length=8)
-  contact: Contact = Field(...)
+    if self.contact_phone:
+      query['contact.phone'] = self.contact_phone
 
-
-class SupplierListResponse(BaseModel):
-  total: int = Field(...)
-  items: list[Supplier] = Field(...)
+    return query

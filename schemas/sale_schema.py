@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from pydantic import BaseModel, Field, field_validator
 from models.sale_detail_model import SaleDetail
 from models.sale_model import Sale, PayWith
@@ -13,7 +14,7 @@ class Product(BaseModel):
 
 
 class SaleCreate(BaseModel):
-  products: list[Product] = Field(...)
+  products: List[Product] = Field(...)
   pay_type: PayWith = Field(...)
   customer: str = ''
 

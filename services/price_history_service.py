@@ -1,23 +1,23 @@
-from datetime import datetime
-import shortuuid
-
-from models.price_history_model import PriceChangeType
+from models.price_history_model import PriceChangeType, PriceHistory
+from repositories.price_history_repository import PriceHistoryRepository
 
 
 class PriceHistoryService():
-  def __init__(self, database) -> None:
-    self._database = database
+  def __init__(self) -> None:
+    self._repo = PriceHistoryRepository()
 
   def create_history(self, product: str, price: float, type_price: PriceChangeType):
     entity = self._create_entity(product, price, type_price)
-    entity['created_at'] = datetime.utcnow()
-    self._database.prices_history.insert_one(entity)
+    entity.new()
+    self._repo.insert(entity)
 
-  def _create_entity(self, product: str, price: float, type_price: PriceChangeType) -> dict:
-    return {
-        '_id': shortuuid.uuid(),
-        'product_id': product,
-        'type': type_price,
-        'price': price,
-        'date': datetime.utcnow()
-    }
+  def _create_entity(self, product: str, price: float, type_price: PriceChangeType) -> PriceHistory:
+    return PriceHistory(
+        _id=None,
+        created_at=None,
+        updated_at=None,
+        product_id=product,
+        type=type_price,
+        price=price,
+        date=None
+    )

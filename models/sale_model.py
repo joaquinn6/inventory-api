@@ -1,6 +1,7 @@
-from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from models.entity import Entity
 
 
 class PayWith(str, Enum):
@@ -10,9 +11,7 @@ class PayWith(str, Enum):
   TRANSFER = "TRANSFER"
 
 
-class Sale(BaseModel):
-  id: str = Field(..., alias="_id")
+class Sale(Entity):
   total_amount: float = Field(...)
   pay_type: PayWith = Field(...)
   customer: str = ''
-  created_at: datetime = None

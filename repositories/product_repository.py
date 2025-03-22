@@ -1,4 +1,5 @@
-from models.product_model import Product
+from bson import ObjectId
+from models.product_model import Product, TrendTypes
 from repositories.base import RepositoryBase
 
 
@@ -12,3 +13,7 @@ class ProductRepository(RepositoryBase[Product]):
 
   def get_by_code(self, code: str) -> Product | None:
     return self.get_one({'code': code.upper()})
+
+  def update_trend(self, id_product: str, trend: TrendTypes):
+    self._collection.update_one(
+        {'_id': ObjectId(id_product)}, {'$set': {'trend': trend}})

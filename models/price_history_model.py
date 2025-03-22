@@ -14,4 +14,8 @@ class PriceHistory(Entity):
   product_id: str = Field(...)
   type: PriceChangeType = PriceChangeType.PURCHASE
   price: float = Field(...)
-  date: datetime = Field(...)
+  date: datetime | None = Field(default=None)
+
+  def new(self):
+    self.initialize()
+    self.date = datetime.utcnow()

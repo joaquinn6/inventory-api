@@ -4,12 +4,13 @@ import io
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
+from core import helpers_api
 from core.auth import AuthService, OptionalHTTPBearer
-from core import helpers_api, var_mongo_provider as mongo_provider
+from models.entity import PagedEntity
 from models.purchase_model import Purchase
 from services.purchase_service import PurchaseService
 from schemas.purchase_schema import (
-    PurchaseCreate, PurchaseQuery, PurchaseListResponse, PurchaseWithDetail)
+    PurchaseCreate, PurchaseQuery, PurchaseWithDetail)
 auth_scheme = OptionalHTTPBearer()
 
 router = APIRouter(
@@ -27,7 +28,7 @@ router = APIRouter(
 async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), purchase: PurchaseCreate = Body(...)) -> Purchase:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = PurchaseService(mongo_provider.db)
+  service = PurchaseService()
   new_purchase = service.create_purchase(purchase)
   return new_purchase.model_dump(by_alias=True)
 
@@ -40,7 +41,7 @@ async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_schem
 async def get_purchases_report(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = PurchaseService(mongo_provider.db)
+  service = PurchaseService()
   excel = service.download_report(query_params, with_detail=False)
   now = datetime.utcnow()
   filename = f'purchases-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
@@ -63,7 +64,7 @@ async def get_purchases_report(query_params: PurchaseQuery = Query(...), token: 
 async def get_purchases_report_detail(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = PurchaseService(mongo_provider.db)
+  service = PurchaseService()
   excel = service.download_report(query_params, with_detail=True)
   now = datetime.utcnow()
   filename = f'purchases-detail-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
@@ -86,10 +87,9 @@ async def get_purchases_report_detail(query_params: PurchaseQuery = Query(...), 
 async def purchase_get_by_id(purchase_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PurchaseWithDetail:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = PurchaseService(mongo_provider.db)
+  service = PurchaseService()
   entity = service.get_purchase_by_id(purchase_id)
-  purchase = PurchaseWithDetail(**entity)
-  return purchase.model_dump(by_alias=True)
+  return entity.model_dump(by_alias=True)
 
 
 @router.get(
@@ -97,11 +97,9 @@ async def purchase_get_by_id(purchase_id: str, token: HTTPAuthorizationCredentia
     status_code=status.HTTP_200_OK,
     summary="Get purchases"
 )
-async def get_purchases(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PurchaseListResponse:
+async def get_purchases(query_params: PurchaseQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PagedEntity:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
-  service = PurchaseService(mongo_provider.db)
-  query, pagination = service.get_query(query_params)
-  purchases = PurchaseListResponse(
-      **helpers_api.get_paginator('purchases', query, pagination))
+  service = PurchaseService()
+  purchases = service.get_paged(query_params)
   return purchases.model_dump(by_alias=True)

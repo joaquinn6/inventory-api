@@ -31,6 +31,7 @@ async def sale_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), 
   new_sale = service.create_sale(sale)
   return new_sale.model_dump(by_alias=True)
 
+
 @router.get(
     "/sales/report",
     status_code=status.HTTP_200_OK,
@@ -52,6 +53,7 @@ async def get_sales_report(query_params: SaleQuery = Query(...), token: HTTPAuth
 
   response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
   return response
+
 
 @router.get(
     "/sales/report-detail",

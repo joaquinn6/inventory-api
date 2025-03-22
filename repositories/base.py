@@ -78,3 +78,10 @@ class RepositoryBase(Generic[T]):
 
   def aggregate(self, pipeline: List) -> list | dict | None:
     return self._collection.aggregate(pipeline)
+
+  def get_by_id_and_update(self, identifier: str, update: dict, return_entity: str) -> T | None:
+    res = self._collection.find_one_and_update(
+        {'_id': ObjectId(identifier)}, update, return_document=pymongo.ReturnDocument.BEFORE if return_entity == 'before' else pymongo.ReturnDocument.AFTER)
+    if not res:
+      return None
+    return self._mapper(res)

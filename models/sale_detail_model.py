@@ -1,5 +1,6 @@
-from datetime import datetime
 from pydantic import BaseModel, Field
+
+from models.entity import Entity
 
 
 class Product(BaseModel):
@@ -8,11 +9,9 @@ class Product(BaseModel):
   code: str = Field(..., max_length=8)
 
 
-class SaleDetail(BaseModel):
-  id: str = Field(..., alias="_id")
+class SaleDetail(Entity):
   sale_id: str = Field(...)
   product: Product = Field(...)
   units: int = Field(...)
   unity_price: float = Field(...)
   total_price: float = Field(...)
-  created_at: datetime = None

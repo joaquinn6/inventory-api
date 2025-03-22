@@ -5,9 +5,9 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class Entity(BaseModel):
-  id: str = Field(alias="_id", default=None)
-  created_at: datetime.datetime = Field(default=None)
-  updated_at: datetime.datetime = Field(default=None)
+  id: str | None = Field(alias="_id", default=None)
+  created_at: datetime.datetime | None = Field(default=None)
+  updated_at: datetime.datetime | None = Field(default=None)
 
   @field_validator("id", mode="before")
   @classmethod

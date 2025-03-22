@@ -1,10 +1,9 @@
-import shortuuid
 from core import helpers_api
 from models.entity import PagedEntity
 from models.product_model import Product
 from repositories.product_repository import ProductRepository
 from repositories.price_history_repository import PriceHistoryRepository
-from schemas.product_schema import ProductCreate, ProductQuery
+from schemas.product_schema import ProductQuery
 from services.reports_service import ReportService
 
 
@@ -33,18 +32,6 @@ class ProductService():
 
   def get_paged(self, query_params: ProductQuery) -> PagedEntity:
     return self._repo.get_paged(query_params.get_query(), query_params.page, query_params.limit, query_params.sort, query_params.order)
-
-  def _create_entity(self, product: ProductCreate) -> dict:
-    return {
-        '_id': shortuuid.uuid(),
-        'name': product.name,
-        'code': product.code.upper(),
-        'categories': product.categories,
-        'description': product.description.capitalize(),
-        'purchase_price': 0.0,
-        'sale_price': 0.0,
-        'stock': 0
-    }
 
   def download_report(self, query_params: ProductQuery) -> tuple:
     products = self._repo.get(

@@ -25,7 +25,7 @@ class PurchaseDetailService():
         total_price=round(price * units, 2)
     )
 
-  def _get_product(self, product_id: str) -> dict:
+  def _get_product(self, product_id: str) -> Product:
     entity = self._repo_product.get_by_id(product_id)
     return Product(
         _id=entity.id,

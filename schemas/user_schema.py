@@ -1,4 +1,5 @@
 import re
+from typing import List
 from pydantic import BaseModel, Field, field_validator
 from schemas.query_base import QueryBase
 from schemas.utils import divide_list
@@ -17,7 +18,7 @@ class UserChangePassword(BaseModel):
 class UserQuery(QueryBase):
   full_name: str = None
   email: str = None
-  roles: list[str] = None
+  roles: List[str] = None
   state: str = 'ALL'
 
   @field_validator("roles", mode="before")

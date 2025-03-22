@@ -15,7 +15,7 @@ class Product(Entity):
   name: str = Field(...)
   code: str = Field(...)
   description: str = Field(default='')
-  categories: list[str] = Field(default=[])
+  categories: List[str] = Field(default=[])
   purchase_price: float = Field(default=0)
   sale_price: float = Field(default=0)
   stock: int = Field(default=0)

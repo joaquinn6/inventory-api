@@ -38,7 +38,7 @@ class PurchaseService():
     purchase = self._repo.get_by_id(id_purchase)
     if not purchase:
       helpers_api.raise_error_404('Compra')
-    detail = self._repo_detail.get({'purchase_id': id_purchase})
+    detail = self._repo_detail.get_by_purchase_id(id_purchase)
     return PurchaseWithDetail(purchase=purchase, detail=detail)
 
   def get_paged(self, query_params: PurchaseQuery) -> PagedEntity:
@@ -52,21 +52,13 @@ class PurchaseService():
         supplier=self._get_supplier(purchase.supplier_id),
         total_amount=sum([round(product.purchase_price * product.units, 2) for product in purchase.products], 0))
 
-  def _get_pagination(self, query_params: PurchaseQuery) -> dict:
-    return {
-        'page': query_params.page,
-        'limit': query_params.limit,
-        'order': query_params.order,
-        'sort': query_params.sort
-    }
-
   def _get_supplier(self, supplier_id: str) -> Supplier:
     supplier = self._repo_supplier.get_by_id(supplier_id)
     if not supplier:
       helpers_api.raise_error_404('Proveedor')
     return Supplier(_id=supplier.id, code=supplier.code, name=supplier.name)
 
-  def _update_products(self, products: list[Product]):
+  def _update_products(self, products: List[Product]):
     for product in products:
       new_values = {
           "$set": {
@@ -119,10 +111,10 @@ class PurchaseService():
     service = ReportService(sheets)
     return service.generate_report()
 
-  def _make_details_sheets(self, sheets: list, purchases: List[Purchase]):
+  def _make_details_sheets(self, sheets: List, purchases: List[Purchase]):
     columns = {
         'product.code': 'Código producto',
-        'product.name': 'Fecha',
+        'product.name': 'Nombre',
         'units': 'Unidades',
         'unity_price': 'Precio unitario (C$)',
         'total_price': 'Total (C$)',

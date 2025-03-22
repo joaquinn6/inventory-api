@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import Field
 from passlib.context import CryptContext
 
@@ -8,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class User(Entity):
   email: str = Field(...)
-  roles: list[str] = Field(...)
+  roles: List[str] = Field(...)
   full_name: str = Field(...)
   password: str = Field(default='')
   active: bool = Field(default=True)
@@ -47,6 +48,6 @@ class User(Entity):
 
 class UserInfo(Entity):
   email: str = Field(...)
-  roles: list[str] = Field(...)
+  roles: List[str] = Field(...)
   full_name: str = Field(...)
   active: bool = Field(...)

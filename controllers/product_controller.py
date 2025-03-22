@@ -10,7 +10,7 @@ from models.entity import PagedEntity
 from models.product_model import Product
 from repositories.product_repository import ProductRepository
 from services.product_service import ProductService
-from schemas.product_schema import ProductUpdate, ProductQuery
+from schemas.product_schema import ProductQuery
 
 auth_scheme = OptionalHTTPBearer()
 
@@ -82,7 +82,7 @@ async def product_get_by_id(product_id: str, token: HTTPAuthorizationCredentials
 )
 async def product_update_by_id(
         product_id: str,
-        product: ProductUpdate = Body(...),
+        product: Product = Body(...),
         token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Product:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()

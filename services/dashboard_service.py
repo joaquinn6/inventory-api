@@ -1,6 +1,11 @@
+from repositories.purchase_repository import PurchaseRepository
+from repositories.sale_detail_repository import SaleDetailRepository
+
+
 class DashboardService():
-  def __init__(self, database) -> None:
-    self._database = database
+  def __init__(self) -> None:
+    self._repo_sale_details = SaleDetailRepository()
+    self._repo_purchase = PurchaseRepository()
 
   def get_dashboard(self) -> dict:
     res = {
@@ -28,8 +33,8 @@ class DashboardService():
             "$sort": {"name": 1}
         }
     ]
-    results = self._database.sale_details.aggregate(pipeline)
-    return list(results)
+    results = self._repo_sale_details.aggregate(pipeline)
+    return results
 
   def get_top_3_suppliers(self) -> list:
     pipeline = [
@@ -50,5 +55,5 @@ class DashboardService():
             "$sort": {"name": 1}
         }
     ]
-    results = self._database.purchases.aggregate(pipeline)
-    return list(results)
+    results = self._repo_purchase.aggregate(pipeline)
+    return results

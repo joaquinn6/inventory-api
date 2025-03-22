@@ -1,6 +1,8 @@
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from models.entity import Entity
 
 
 class PriceChangeType(str, Enum):
@@ -8,10 +10,12 @@ class PriceChangeType(str, Enum):
   PURCHASE = "PURCHASE"
 
 
-class PriceHistory(BaseModel):
-  id: str = Field(..., alias="_id")
+class PriceHistory(Entity):
   product_id: str = Field(...)
   type: PriceChangeType = PriceChangeType.PURCHASE
   price: float = Field(...)
-  date: datetime = Field(...)
-  created_at: datetime = None
+  date: datetime | None = Field(default=None)
+
+  def new(self):
+    self.initialize()
+    self.date = datetime.utcnow()

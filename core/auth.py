@@ -25,9 +25,6 @@ class AuthService():
   def verify_password(self, plain_password, password) -> bool:
     return pwd_context.verify(plain_password, password)
 
-  def get_password_hash(self, password) -> str:
-    return pwd_context.hash(password)
-
   def get_user(self, email: str) -> dict:
     return mongo_provider.db.users.find_one({'email': email.lower(), 'active': True})
 

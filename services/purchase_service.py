@@ -1,5 +1,4 @@
 from typing import List
-
 from core import helpers_api
 from models.entity import PagedEntity
 from models.product_model import TrendTypes

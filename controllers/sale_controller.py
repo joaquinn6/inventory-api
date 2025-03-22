@@ -93,6 +93,30 @@ async def sale_get_by_id(sale_id: str, token: HTTPAuthorizationCredentials = Dep
 
 
 @router.get(
+    "/sales/{sale_id}/receipt",
+    status_code=status.HTTP_200_OK,
+    summary="Get sale by id"
+)
+async def sale_receipt_get_by_id(sale_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
+  service = SaleService()
+  receipt, entity = service.download_receipt(sale_id)
+
+  now = datetime.utcnow()
+  filename = f'venta-{entity.id}-{now.strftime("%Y%m%d%H%M")}.pdf'
+
+  response = StreamingResponse(
+      io.BytesIO(receipt),
+      media_type="application/pdf",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+  )
+
+  response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
+  return response
+
+
+@router.get(
     "/sales",
     status_code=status.HTTP_200_OK,
     summary="Get sales"

@@ -1,5 +1,4 @@
-from typing import List
-
+from typing import List, Tuple
 from core import helpers_api
 from models.entity import PagedEntity
 from models.sale_model import Sale
@@ -10,6 +9,7 @@ from repositories.sale_repository import SaleRepository
 from repositories.supplier_repository import SupplierRepository
 from schemas.sale_schema import SaleCreate, SaleQuery, Product, SaleWithDetail
 from services.price_history_service import PriceHistoryService
+from services.receipt_service import ReceiptService
 from services.sale_detail_service import SaleDetailService
 from services.reports_service import ReportService
 
@@ -62,7 +62,7 @@ class SaleService():
           id_sale, product.id,
           product.units, product.sale_price)
 
-  def download_report(self, query_params: SaleQuery, with_detail: bool = False) -> tuple:
+  def download_report(self, query_params: SaleQuery, with_detail: bool = False) -> bytes:
     sales = self._repo.get(
         query_params.get_query(),
         query_params.sort, query_params.order)
@@ -128,3 +128,11 @@ class SaleService():
       }
       self._repo_products.get_by_id_and_update(
           product.id, new_values, 'before')
+
+  def download_receipt(self, id_sale: str) -> Tuple[bytes, Sale]:
+    sale = self._repo.get_by_id(id_sale)
+    if not sale:
+      helpers_api.raise_error_404('Venta')
+    details = self._repo_detail.get_by_sale_id(id_sale)
+    service_receipt = ReceiptService(sale=sale, details=details)
+    return service_receipt.generate_receipt(), sale

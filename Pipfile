@@ -18,6 +18,7 @@ passlib = {extras = ["bcrypt"], version = "*"}
 pandas = "*"
 openpyxl = "*"
 fastapi = {extras = ["standard"], version = "*"}
+fpdf2 = "*"
 
 [dev-packages]
 

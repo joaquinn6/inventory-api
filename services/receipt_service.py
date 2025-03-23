@@ -1,6 +1,6 @@
-from io import BytesIO
 from typing import List
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
+from fpdf.enums import Align, TableBordersLayout
 
 from models.sale_detail_model import SaleDetail
 from models.sale_model import Sale
@@ -12,42 +12,50 @@ class ReceiptService:
     self._details = details
 
   def generate_receipt(self) -> bytes:
-    buffer = BytesIO()
-    ancho_papel = 180
-    alto_papel = 210 + len(self._details) * 30
+    pdf = FPDF(unit="mm", format=(48, 60 + len(self._details) * 15))
+    pdf.add_page()
+    pdf.set_margins(0, 0, 0)
 
-    c = canvas.Canvas(buffer, pagesize=(ancho_papel, alto_papel))
+    self._generate_header(pdf)
+    pdf.set_font('Arial', size=8)
+    self._generate_body(pdf)
+    self._generate_footer(pdf)
 
-    c.setFont("Helvetica", 10)
-    y_position = alto_papel - 20  # Margen superior
+    return pdf.output(dest='S')
 
-    # Datos de la factura
-    c.drawString(10, y_position, "Factura Electrónica")
-    y_position -= 20
-    c.drawString(10, y_position, "Empresa XYZ")
-    y_position -= 20
-    c.drawString(10, y_position, self._sale.created_at.strftime('%d/%m/%Y'))
-    y_position -= 20
-    c.drawString(10, y_position, f"Cliente: {self._sale.customer}")
-    y_position -= 20
-    c.drawString(10, y_position, "-" * 30)  # Línea separadora
-    y_position -= 20
+  def _generate_header(self, pdf: FPDF):
+    pdf.set_font('Arial', 'B', size=10)
+    with pdf.table(col_widths=[pdf.epw], text_align=Align.C, borders_layout=TableBordersLayout.NONE, first_row_as_headings=False, gutter_height=0, padding=0) as table:
+      row = table.row()
+      row.cell('Empresa fantasma', )
+      pdf.set_font('Arial', size=8)
 
-    # Productos
-    for detail in self._details:
-      c.drawString(
-          10, y_position, f"{detail.product.code} {detail.product.name}")
-      c.drawString(10, y_position-10,
-                   f"x{detail.units} - C${detail.unity_price:.2f}    C${detail.total_price:.2f}")
-      y_position -= 20
+      row = table.row()
+      row.cell(self._sale.created_at.strftime('%d/%m/%Y'))
 
-    c.drawString(10, y_position, "-" * 30)  # Línea separadora
-    y_position -= 20
+      row = table.row()
+      row.cell(self._sale.id)
 
-    # Total
-    c.drawString(10, y_position, f"Total: ${self._sale.total_amount:.2f}")
-    y_position -= 20
+  def _generate_footer(self, pdf: FPDF):
+    with pdf.table(col_widths=[pdf.epw], text_align=Align.C, borders_layout=TableBordersLayout.NONE, first_row_as_headings=False, gutter_height=0, padding=0) as table:
+      row = table.row()
+      row.cell('Gracias por su compra')
 
-    c.save()
-    buffer.seek(0)
-    return buffer.read()
+  def _generate_body(self, pdf: FPDF):
+    with pdf.table(col_widths=[pdf.epw * 0.7, pdf.epw * 0.3], text_align=(Align.L, Align.R), borders_layout=TableBordersLayout.NONE, first_row_as_headings=True, gutter_height=0, padding=0) as table:
+      for detail in self._details:
+        row = table.row()
+        row.cell("Producto")
+        row.cell("Precio")
+
+        row = table.row()
+        row.cell(f"{detail.product.code} - {detail.product.name}")
+        row.cell(f"C${detail.unity_price}")
+
+        row = table.row()
+        row.cell(f"{detail.units} und")
+        row.cell(F"C${detail.total_price}")
+
+      row = table.row()
+      row.cell("Total:")
+      row.cell(f"{self._sale.total_amount}")

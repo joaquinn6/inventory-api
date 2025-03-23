@@ -58,4 +58,4 @@ class ReceiptService:
 
       row = table.row()
       row.cell("Total:")
-      row.cell(f"{self._sale.total_amount}")
+      row.cell(f"C${self._sale.total_amount}")

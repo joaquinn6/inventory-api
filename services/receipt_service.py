@@ -42,20 +42,20 @@ class ReceiptService:
       row.cell('Gracias por su compra')
 
   def _generate_body(self, pdf: FPDF):
-    with pdf.table(col_widths=[pdf.epw * 0.7, pdf.epw * 0.3], text_align=(Align.L, Align.R), borders_layout=TableBordersLayout.NONE, first_row_as_headings=True, gutter_height=0, padding=0) as table:
+    with pdf.table(col_widths=[pdf.epw * 0.6, pdf.epw * 0.4], text_align=(Align.L, Align.R), borders_layout=TableBordersLayout.NONE, first_row_as_headings=True, gutter_height=0, padding=0) as table:
       for detail in self._details:
         row = table.row()
         row.cell("Producto")
-        row.cell("Precio")
+        row.cell("Precio(C$)")
 
         row = table.row()
         row.cell(f"{detail.product.code} - {detail.product.name}")
-        row.cell(f"C${detail.unity_price}")
+        row.cell(f"{detail.unity_price}")
 
         row = table.row()
         row.cell(f"{detail.units} und")
-        row.cell(F"C${detail.total_price}")
+        row.cell(F"{detail.total_price}")
 
       row = table.row()
-      row.cell("Total:")
-      row.cell(f"C${self._sale.total_amount}")
+      row.cell("Total(C$):")
+      row.cell(f"{self._sale.total_amount}")

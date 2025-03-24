@@ -1,5 +1,5 @@
 """Routes y controllers de usuarios"""
-from datetime import datetime
+from datetime import datetime, timezone
 import io
 from fastapi import Query
 from fastapi import APIRouter, Depends, status, Body
@@ -65,7 +65,7 @@ async def get_users_report(query_params: UserQuery = Query(...), token: HTTPAuth
     helpers_api.raise_no_authorized()
   service = UserService()
   excel = service.download_report(query_params)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'users-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(

@@ -1,5 +1,5 @@
 """Routes y controllers de ventas"""
-from datetime import datetime
+from datetime import datetime, timezone
 import io
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.responses import StreamingResponse
@@ -43,7 +43,7 @@ async def get_sales_report(query_params: SaleQuery = Query(...), token: HTTPAuth
     helpers_api.raise_no_authorized()
   service = SaleService()
   excel = service.download_report(query_params, with_detail=False)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'sales-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(
@@ -66,7 +66,7 @@ async def get_sales_report_detail(query_params: SaleQuery = Query(...), token: H
     helpers_api.raise_no_authorized()
   service = SaleService()
   excel = service.download_report(query_params, with_detail=True)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'sales-detail-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(
@@ -103,7 +103,7 @@ async def sale_receipt_get_by_id(sale_id: str, token: HTTPAuthorizationCredentia
   service = SaleService()
   receipt, entity = service.download_receipt(sale_id)
 
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'venta-{entity.id}-{now.strftime("%Y%m%d%H%M")}.pdf'
 
   response = StreamingResponse(

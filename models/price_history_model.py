@@ -1,5 +1,5 @@
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import Field
 
 from models.entity import Entity
@@ -18,4 +18,4 @@ class PriceHistory(Entity):
 
   def new(self):
     self.initialize()
-    self.date = datetime.utcnow()
+    self.date = datetime.now(timezone.utc)

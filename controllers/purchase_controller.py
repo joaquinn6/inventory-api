@@ -1,5 +1,5 @@
 """Routes y controllers de compras"""
-from datetime import datetime
+from datetime import datetime, timezone
 import io
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.responses import StreamingResponse
@@ -43,7 +43,7 @@ async def get_purchases_report(query_params: PurchaseQuery = Query(...), token: 
     helpers_api.raise_no_authorized()
   service = PurchaseService()
   excel = service.download_report(query_params, with_detail=False)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'purchases-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(
@@ -66,7 +66,7 @@ async def get_purchases_report_detail(query_params: PurchaseQuery = Query(...), 
     helpers_api.raise_no_authorized()
   service = PurchaseService()
   excel = service.download_report(query_params, with_detail=True)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'purchases-detail-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(

@@ -1,5 +1,5 @@
 """Routes y controllers de configuración"""
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from fastapi import APIRouter, Body, Depends, status, UploadFile, File
 from fastapi.responses import StreamingResponse
@@ -79,7 +79,7 @@ async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
     helpers_api.raise_no_authorized()
   service = ConfigService(mongo_provider.db)
   backup_file = service.create_backup()
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'backup-{now.strftime("%Y%m%d%H%M")}.zip'
 
   response = StreamingResponse(

@@ -1,6 +1,6 @@
 """Routes y controllers de productos"""
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials
@@ -44,7 +44,7 @@ async def get_products_report(query_params: ProductQuery = Query(...), token: HT
     helpers_api.raise_no_authorized()
   service = ProductService()
   excel = service.download_report(query_params)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'products-report-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(

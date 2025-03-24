@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 from fastapi import HTTPException, Request, status
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
@@ -38,7 +38,8 @@ class AuthService():
 
   def create_access_token(self, data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc)(
+    ) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode['expire'] = expire.strftime("%Y-%m-%dT%H:%M:%S.%f")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -74,7 +75,7 @@ class AuthService():
 
   def _is_expired(self, date_str: str) -> bool:
     date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     return date <= now
 
   def _raise_fail_credentials(self):

@@ -1,6 +1,6 @@
 """Routes y controllers de proveedores"""
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Depends, Query, status, Body
 from fastapi.security import HTTPAuthorizationCredentials
@@ -44,7 +44,7 @@ async def get_suppliers_report(query_params: SupplierQuery = Query(...), token: 
     helpers_api.raise_no_authorized()
   service = SupplierService()
   excel = service.download_report(query_params)
-  now = datetime.utcnow()
+  now = datetime.now(timezone.utc)
   filename = f'suppliers-{now.strftime("%Y%m%d%H%M")}.xlsx'
 
   response = StreamingResponse(

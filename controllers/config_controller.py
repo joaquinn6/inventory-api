@@ -29,7 +29,7 @@ async def get_config(token: HTTPAuthorizationCredentials = Depends(auth_scheme))
   repo = ConfigRepository()
   entity = repo.get_one({})
   if not entity:
-    return Config()
+    return Config().model_dump(by_alias=True)
   return entity.model_dump(by_alias=True)
 
 
@@ -38,7 +38,7 @@ async def get_config(token: HTTPAuthorizationCredentials = Depends(auth_scheme))
     status_code=status.HTTP_200_OK,
     summary="Update config"
 )
-async def supplier_update_by_id(
+async def config_update(
         config: Config = Body(...),
         token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Config:
   if not AuthService().is_manager(token):

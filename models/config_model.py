@@ -31,16 +31,18 @@ class Currency(BaseModel):
 
 
 class Config(Entity):
-  company: str = Field(default=Company())
+  company: Company = Field(default=Company())
   categories: List[Categories] = Field(default=[])
   currency: Currency = Field(default=Currency())
 
   @field_validator("categories", mode="before")
   @classmethod
-  def str_to_dict(cls, value):
-    if isinstance(value, str):
-      return {'label': value, 'value': value.replace(' ', '_').upper()}
-    return value
+  def str_to_dict(cls, values):
+    for (index, value) in enumerate(values):
+      if isinstance(value, str):
+        values[index] = {'label': value.capitalize(),
+                         'value': value.replace(' ', '_').upper()}
+    return values
 
   def new(self):
     self.initialize()
@@ -49,3 +51,4 @@ class Config(Entity):
     self.on_update()
     self.company = new_item.company
     self.categories = new_item.categories
+    self.currency = new_item.currency

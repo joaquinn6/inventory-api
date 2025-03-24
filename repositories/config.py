@@ -5,4 +5,4 @@ from repositories.base import RepositoryBase
 class ConfigRepository(RepositoryBase[Config]):
 
   def __init__(self) -> None:
-    super().__init__('products', Config.from_dict)
+    super().__init__('config', Config.from_dict)

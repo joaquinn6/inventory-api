@@ -3,10 +3,24 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from bson import json_util
 from fastapi import HTTPException, status
 
+from models.config_model import Config
+from repositories.config import ConfigRepository
+
 
 class ConfigService():
   def __init__(self, database) -> None:
     self._database = database
+    self._repo = ConfigRepository()
+
+  def create_config(self, config: Config) -> Config:
+    config.new()
+    self._repo.insert(config)
+    return config
+
+  def update_config(self, exist: Config, update: Config) -> Config:
+    exist.update(update)
+    self._repo.update_by_id(exist)
+    return exist
 
   def create_backup(self) -> BytesIO:
     try:

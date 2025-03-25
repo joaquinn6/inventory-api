@@ -75,6 +75,7 @@ class AuthService():
 
   def _is_expired(self, date_str: str) -> bool:
     date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
+    date = date.replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     return date <= now
 

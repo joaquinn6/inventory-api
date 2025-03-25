@@ -4,12 +4,15 @@ from fpdf.enums import Align, TableBordersLayout
 
 from models.sale_detail_model import SaleDetail
 from models.sale_model import Sale
+from repositories.config import ConfigRepository
 
 
 class ReceiptService:
   def __init__(self, sale: Sale, details: List[SaleDetail]):
     self._sale = sale
     self._details = details
+    config_repo = ConfigRepository()
+    self._config = config_repo.get_one({})
 
   def generate_receipt(self) -> bytes:
     pdf = FPDF(unit="mm", format=(48, 60 + len(self._details) * 15))
@@ -27,7 +30,7 @@ class ReceiptService:
     pdf.set_font('Arial', 'B', size=10)
     with pdf.table(col_widths=[pdf.epw], text_align=Align.C, borders_layout=TableBordersLayout.NONE, first_row_as_headings=False, gutter_height=0, padding=0) as table:
       row = table.row()
-      row.cell('Empresa fantasma', )
+      row.cell(self._config.company.name)
       pdf.set_font('Arial', size=8)
 
       row = table.row()
@@ -39,14 +42,14 @@ class ReceiptService:
   def _generate_footer(self, pdf: FPDF):
     with pdf.table(col_widths=[pdf.epw], text_align=Align.C, borders_layout=TableBordersLayout.NONE, first_row_as_headings=False, gutter_height=0, padding=0) as table:
       row = table.row()
-      row.cell('Gracias por su compra')
+      row.cell(self._config.company.slogan)
 
   def _generate_body(self, pdf: FPDF):
     with pdf.table(col_widths=[pdf.epw * 0.6, pdf.epw * 0.4], text_align=(Align.L, Align.R), borders_layout=TableBordersLayout.NONE, first_row_as_headings=True, gutter_height=0, padding=0) as table:
       for detail in self._details:
         row = table.row()
         row.cell("Producto")
-        row.cell("Precio(C$)")
+        row.cell(f"Precio({self._config.currency.symbol})")
 
         row = table.row()
         row.cell(f"{detail.product.code} - {detail.product.name}")
@@ -57,5 +60,5 @@ class ReceiptService:
         row.cell(F"{detail.total_price}")
 
       row = table.row()
-      row.cell("Total(C$):")
+      row.cell(f"Total({self._config.currency.symbol}):")
       row.cell(f"{self._sale.total_amount}")

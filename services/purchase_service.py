@@ -6,6 +6,7 @@ from models.purchase_model import Purchase, Supplier
 from models.price_history_model import PriceChangeType
 from schemas.purchase_schema import PurchaseCreate, PurchaseQuery, Product, PurchaseWithDetail
 
+from repositories.config import ConfigRepository
 from repositories.product_repository import ProductRepository
 from repositories.purchase_repository import PurchaseRepository
 from repositories.supplier_repository import SupplierRepository
@@ -24,6 +25,8 @@ class PurchaseService():
     self._repo_supplier = SupplierRepository()
     self._service_detail = PurchaseDetailService()
     self._service_price = PriceHistoryService()
+    config_repo = ConfigRepository()
+    self._config = config_repo.get_one({})
 
   def create_purchase(self, purchase: PurchaseCreate) -> Purchase:
     entity = self._create_entity(purchase=purchase)
@@ -95,7 +98,7 @@ class PurchaseService():
         'created_at': 'Fecha',
         'supplier.code': 'Código proveedor',
         'supplier.name': 'Nombre proveedor',
-        'total_amount': 'Total (C$)',
+        'total_amount': f'Total ({self._config.currency.symbol})',
     }
     purchases_report = [purchase.to_report() for purchase in purchases]
     total_amount = sum(purchase.total_amount for purchase in purchases)
@@ -115,8 +118,8 @@ class PurchaseService():
         'product.code': 'Código producto',
         'product.name': 'Nombre',
         'units': 'Unidades',
-        'unity_price': 'Precio unitario (C$)',
-        'total_price': 'Total (C$)',
+        'unity_price': f'Precio unitario ({self._config.currency.symbol})',
+        'total_price': f'Total ({self._config.currency.symbol})',
     }
     for purchase in purchases:
       if not purchase.id:

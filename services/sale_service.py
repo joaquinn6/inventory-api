@@ -3,6 +3,7 @@ from core import helpers_api
 from models.entity import PagedEntity
 from models.sale_model import Sale
 from models.product_model import Product as ProductEntity
+from repositories.config import ConfigRepository
 from repositories.product_repository import ProductRepository
 from repositories.sale_detail_repository import SaleDetailRepository
 from repositories.sale_repository import SaleRepository
@@ -22,6 +23,8 @@ class SaleService():
     self._repo_supplier = SupplierRepository()
     self._service_detail = SaleDetailService()
     self._service_price = PriceHistoryService()
+    config_repo = ConfigRepository()
+    self._config = config_repo.get_one({})
 
   def create_sale(self, sale: SaleCreate) -> Sale:
     is_valid, products = self._valid_products(sale)
@@ -71,7 +74,7 @@ class SaleService():
         'created_at': 'Fecha',
         'customer': 'Cliente',
         'pay_type': 'Forma de pago',
-        'total_amount': 'Cantidad total (C$)',
+        'total_amount': f'Cantidad total ({self._config.currency.symbol})',
     }
     sales_report = [sale.to_report() for sale in sales]
     total_amount = sum(sale.total_amount for sale in sales)
@@ -90,8 +93,8 @@ class SaleService():
         'product.code': 'Código producto',
         'product.name': 'Nombre',
         'units': 'Unidades',
-        'unity_price': 'Precio unitario (C$)',
-        'total_price': 'Total (C$)',
+        'unity_price': f'Precio unitario ({self._config.currency.symbol})',
+        'total_price': f'Total ({self._config.currency.symbol})',
     }
 
     for sale in sales:

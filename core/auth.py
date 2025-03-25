@@ -38,8 +38,8 @@ class AuthService():
 
   def create_access_token(self, data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc)(
-    ) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + \
+        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode['expire'] = expire.strftime("%Y-%m-%dT%H:%M:%S.%f")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

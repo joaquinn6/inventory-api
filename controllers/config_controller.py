@@ -41,7 +41,7 @@ async def get_config(token: HTTPAuthorizationCredentials = Depends(auth_scheme))
 async def config_update(
         config: Config = Body(...),
         token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Config:
-  if not AuthService().is_manager(token):
+  if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
   repo = ConfigRepository()
   entity = repo.get_one({})

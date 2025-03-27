@@ -10,6 +10,15 @@ class PayWith(str, Enum):
   CREDIT_CARD = "CREDIT_CARD"
   TRANSFER = "TRANSFER"
 
+  def return_description(self):
+    _descriptions = {
+        "CASH": "Efectivo",
+        "DEBIT_CARD": "Tarjeta de débito",
+        "CREDIT_CARD": "Tarjeta de crédito",
+        "TRANSFER": "Transferencia"
+    }
+    return _descriptions[str(self.value)]
+
 
 class Sale(Entity):
   total_amount: float = Field(...)

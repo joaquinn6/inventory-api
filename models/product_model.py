@@ -48,6 +48,7 @@ class Product(Entity):
     self.name = new_item.name
     self.description = new_item.description.capitalize()
     self.categories = new_item.categories
+    self.warranty = new_item.warranty
 
   def to_report(self):
     product_dict = self.model_dump(by_alias=True)

@@ -12,9 +12,11 @@ class Supplier(BaseModel):
 class Purchase(Entity):
   supplier: Supplier = Field(...)
   total_amount: float = Field(...)
+  user: str = Field(default='')
 
-  def new(self):
+  def new(self, user: str):
     self.initialize()
+    self.user = user
     if isinstance(self.supplier, dict):
       self.supplier = Supplier(**self.supplier)
 

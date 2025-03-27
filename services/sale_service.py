@@ -26,13 +26,13 @@ class SaleService():
     config_repo = ConfigRepository()
     self._config = config_repo.get_one({})
 
-  def create_sale(self, sale: SaleCreate) -> Sale:
+  def create_sale(self, sale: SaleCreate, user: str) -> Sale:
     is_valid, products = self._valid_products(sale)
     if not is_valid:
       helpers_api.raise_error_400(
           f'No hay suficientes productos ({", ".join([product.name for product in products])}) para despachar la venta')
     entity = self._create_entity(sale=sale)
-    entity.new()
+    entity.new(user)
     self._repo.insert(entity)
     self._create_details(entity.id, sale.products)
     self._update_products(sale.products)

@@ -28,8 +28,9 @@ router = APIRouter(
 async def purchase_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), purchase: PurchaseCreate = Body(...)) -> Purchase:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
+  user = AuthService().get_content_token(token)
   service = PurchaseService()
-  new_purchase = service.create_purchase(purchase)
+  new_purchase = service.create_purchase(purchase, user['email'])
   return new_purchase.model_dump(by_alias=True)
 
 

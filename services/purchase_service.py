@@ -28,9 +28,9 @@ class PurchaseService():
     config_repo = ConfigRepository()
     self._config = config_repo.get_one({})
 
-  def create_purchase(self, purchase: PurchaseCreate) -> Purchase:
+  def create_purchase(self, purchase: PurchaseCreate, user: str) -> Purchase:
     entity = self._create_entity(purchase=purchase)
-    entity.new()
+    entity.new(user)
     self._repo.insert(entity)
     self._create_details(entity.id, purchase.products)
     self._update_products(purchase.products)

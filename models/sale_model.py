@@ -14,10 +14,12 @@ class PayWith(str, Enum):
 class Sale(Entity):
   total_amount: float = Field(...)
   pay_type: PayWith = Field(...)
-  customer: str = ''
+  customer: str = Field(default='')
+  user: str = Field(default='')
 
-  def new(self):
+  def new(self, user: str):
     self.initialize()
+    self.user = user
 
   def to_report(self) -> dict:
     sale_dict = self.model_dump(by_alias=True)

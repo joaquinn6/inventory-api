@@ -28,8 +28,10 @@ router = APIRouter(
 async def sale_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), sale: SaleCreate = Body(...)) -> Sale:
   if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
+
+  user = AuthService().get_content_token(token)
   service = SaleService()
-  new_sale = service.create_sale(sale)
+  new_sale = service.create_sale(sale, user['email'])
   return new_sale.model_dump(by_alias=True)
 
 

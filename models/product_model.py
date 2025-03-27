@@ -21,7 +21,7 @@ class WarrantiesMeasures(str, Enum):
 
 class Warranty(BaseModel):
   has_warranty: bool = Field(default=False)
-  measure: WarrantiesMeasures = Field(default=None)
+  measure: WarrantiesMeasures | None = Field(default=None)
   quantity: int = Field(default=0)
 
 

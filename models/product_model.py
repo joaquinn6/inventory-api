@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from models.entity import Entity
 
@@ -9,6 +9,20 @@ class TrendTypes(str, Enum):
   UPWARD = "UPWARD"
   FALLING = "FALLING"
   EQUAL = "EQUAL"
+
+
+class WarrantiesMeasures(str, Enum):
+  HOUR = "HOUR"
+  DAY = "DAY"
+  WEEK = "WEEK"
+  MONTH = "MONTH"
+  YEAR = "YEAR"
+
+
+class Warranty(BaseModel):
+  has_warranty: bool = Field(default=False)
+  measure: WarrantiesMeasures = Field(default=None)
+  quantity: int = Field(default=0)
 
 
 class Product(Entity):
@@ -21,6 +35,7 @@ class Product(Entity):
   stock: int = Field(default=0)
   trend: TrendTypes = TrendTypes.EQUAL
   graph: List[dict] = Field(default=[])
+  warranty: Warranty = Field(default=Warranty())
 
   def new(self):
     self.code = self.code.upper()

@@ -17,11 +17,13 @@ class ReceiptService:
     config_repo = ConfigRepository()
     self._config = config_repo.get_one({})
     self._last_y = None
+    self.height = self._calculate_height()
 
   def generate_receipt(self) -> bytes:
-    pdf = FPDF(unit="mm", format=(48, 100 + len(self._details) * 15))
+    pdf = FPDF(unit="mm", format=(48, self.height))
     pdf.add_page()
-    pdf.set_margins(0, 5, 0)
+    pdf.set_auto_page_break(False)
+    pdf.set_margins(0, 0, 0)
 
     self._generate_header(pdf)
     pdf.set_font('Arial', size=8)
@@ -32,8 +34,6 @@ class ReceiptService:
 
   def _generate_header(self, pdf: FPDF):
     params = {
-        # "line_height": 0.31,
-        # "cell_fill_mode": "COLUMNS",  # !THIS
         "line_height": 0,
         "col_widths": [pdf.epw],
         "text_align": Align.C,
@@ -46,10 +46,9 @@ class ReceiptService:
     pdf.set_font('Arial', 'B', size=10)
     with pdf.table(**params) as table:
       if self._config.company.logo:
-        row = table.row()
-        logo = self.base64_to_image(self._config.company.logo, (100, 100))
-        row.cell(img=logo, align=Align.C, img_fill_width=True,
-                 style=FontFace(size_pt=0))
+        logo = self.base64_to_image(self._config.company.logo)
+        pdf.image(logo, Align.C, 0, 20, 20)
+        pdf.ln(23)
 
       row = table.row()
       row.cell(self._config.company.name, style=FontFace(size_pt=0))
@@ -71,8 +70,6 @@ class ReceiptService:
 
   def _generate_footer(self, pdf: FPDF):
     params = {
-        # "line_height": 0.0,
-        # "cell_fill_mode": "COLUMNS",  # !THIS
         "col_widths": [pdf.epw],
         "text_align": Align.C,
         "borders_layout": TableBordersLayout.NONE,
@@ -90,7 +87,6 @@ class ReceiptService:
 
   def _generate_body(self, pdf: FPDF):
     params = {
-        # "cell_fill_mode": "COLUMNS",  # !THIS
         "line_height": 4,
         "col_widths": [pdf.epw * 0.6, pdf.epw * 0.4],
         "text_align": (Align.L, Align.R),
@@ -123,6 +119,10 @@ class ReceiptService:
         row.cell(f"{detail.units} x {detail.unity_price}")
         row.cell(F"{detail.total_price}")
       pdf.set_font('Arial', 'B', size=10)
+
+      row = table.row()
+      row.cell(colspan=2)
+
       row = table.row()
       row.cell(f"Total({self._config.currency.symbol}):")
       row.cell(f"{self._sale.total_amount}")
@@ -133,9 +133,20 @@ class ReceiptService:
           f"Pagado con: {self._sale.pay_type.return_description()}", colspan=2)
     self._last_y = pdf.get_y()
 
-  def base64_to_image(self, base64_string: str, size: tuple = (100, 100)) -> Image:
+  def base64_to_image(self, base64_string: str) -> Image:
     if "data:image" in base64_string:
       base64_string = base64_string.split(",")[1]
     image_bytes = base64.b64decode(base64_string)
     image = Image.open(BytesIO(image_bytes))
-    return image.resize(size)
+
+    return image
+
+  def _calculate_height(self):
+    height = 36
+    if self._config.company.logo:
+      height = 59
+    for detail in self._details:
+      height += 12
+      if detail.product.warranty.has_warranty:
+        height += 7
+    return height

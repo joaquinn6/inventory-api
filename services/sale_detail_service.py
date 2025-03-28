@@ -30,5 +30,6 @@ class SaleDetailService():
     return Product(
         _id=entity.id,
         name=entity.name,
-        code=entity.code
+        code=entity.code,
+        warranty=entity.warranty
     )

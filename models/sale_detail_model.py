@@ -1,12 +1,14 @@
 from pydantic import BaseModel, Field
 
 from models.entity import Entity
+from models.product_model import Warranty
 
 
 class Product(BaseModel):
   id: str = Field(..., alias="_id")
   name: str = Field(...)
   code: str = Field(..., max_length=8)
+  warranty: Warranty = Field(default=Warranty())
 
 
 class SaleDetail(Entity):

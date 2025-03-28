@@ -18,6 +18,16 @@ class WarrantiesMeasures(str, Enum):
   MONTH = "MONTH"
   YEAR = "YEAR"
 
+  def return_description(self):
+    _descriptions = {
+        "HOUR": "Hora(s)",
+        "DAY": "Día(s)",
+        "WEEK": "Semana(s)",
+        "MONTH": "Mes(es)",
+        "YEAR": "Año(s)"
+    }
+    return _descriptions[str(self.value)]
+
 
 class Warranty(BaseModel):
   has_warranty: bool = Field(default=False)

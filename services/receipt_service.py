@@ -143,7 +143,7 @@ class ReceiptService:
 
     return image
 
-  def _calculate_height(self):
+  def _calculate_height(self) -> int:
     height = 44
     lines = math.ceil(len(self._config.company.name) / 30)
     height += lines * 3
@@ -157,7 +157,7 @@ class ReceiptService:
         height += 4
     return height
 
-  def truncate_text(self, pdf, text, max_width):
+  def truncate_text(self, pdf: FPDF, text: str, max_width: float) -> str:
     """Trunca el texto con '...' si supera el ancho máximo permitido."""
     if pdf.get_string_width(text) <= max_width:
       return text  # No es necesario truncar

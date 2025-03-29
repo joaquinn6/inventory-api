@@ -100,11 +100,10 @@ class ReceiptService:
                     self._last_y + 2, dash_length=1, space_length=1)
     pdf.ln(3)
     with pdf.table(**params) as table:
+      row = table.row()
+      row.cell("Producto")
+      row.cell(f"Precio({self._config.currency.symbol})")
       for detail in self._details:
-        row = table.row()
-        row.cell("Producto")
-        row.cell(f"Precio({self._config.currency.symbol})")
-
         row = table.row()
         row.cell(f"{detail.product.code} - {detail.product.name}", colspan=2)
 
@@ -146,7 +145,7 @@ class ReceiptService:
     if self._config.company.logo:
       height = 59
     for detail in self._details:
-      height += 12
+      height += 10
       if detail.product.warranty.has_warranty:
-        height += 7
+        height += 6
     return height

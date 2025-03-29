@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+import math
 from typing import List
 from fpdf import FPDF, FontFace
 from fpdf.enums import Align, TableBordersLayout
@@ -34,7 +35,7 @@ class ReceiptService:
 
   def _generate_header(self, pdf: FPDF):
     params = {
-        "line_height": 0,
+        "line_height": 4,
         "col_widths": [pdf.epw],
         "text_align": Align.C,
         "borders_layout": TableBordersLayout.NONE,
@@ -80,6 +81,7 @@ class ReceiptService:
     pdf.dashed_line(0, self._last_y + 2, pdf.epw,
                     self._last_y + 2, dash_length=1, space_length=1)
     pdf.ln(1)
+    pdf.set_font('Arial', size=8)
 
     with pdf.table(**params) as table:
       row = table.row()
@@ -105,7 +107,8 @@ class ReceiptService:
       row.cell(f"Precio({self._config.currency.symbol})")
       for detail in self._details:
         row = table.row()
-        row.cell(f"{detail.product.code} - {detail.product.name}", colspan=2)
+        row.cell(self.truncate_text(
+            pdf, f"{detail.product.code} - {detail.product.name}", pdf.epw * 0.9), colspan=2)
 
         if detail.product.warranty.has_warranty:
           pdf.set_font('Arial', size=6, style='I')
@@ -126,7 +129,7 @@ class ReceiptService:
       row.cell(f"Total({self._config.currency.symbol}):")
       row.cell(f"{self._sale.total_amount}")
 
-      pdf.set_font('Arial', size=8)
+      pdf.set_font('Arial', size=6, style='I')
       row = table.row()
       row.cell(
           f"Pagado con: {self._sale.pay_type.return_description()}", colspan=2)
@@ -141,11 +144,25 @@ class ReceiptService:
     return image
 
   def _calculate_height(self):
-    height = 36
+    height = 44
+    lines = math.ceil(len(self._config.company.name) / 30)
+    height += lines * 3
+    lines = math.ceil(len(self._config.company.slogan) / 30)
+    height += lines * 3
     if self._config.company.logo:
-      height = 59
+      height += 23
     for detail in self._details:
-      height += 10
+      height += 8
       if detail.product.warranty.has_warranty:
-        height += 6
+        height += 4
     return height
+
+  def truncate_text(self, pdf, text, max_width):
+    """Trunca el texto con '...' si supera el ancho máximo permitido."""
+    if pdf.get_string_width(text) <= max_width:
+      return text  # No es necesario truncar
+
+    while pdf.get_string_width(text + "...") > max_width:
+      text = text[:-1]  # Quita un carácter hasta que encaje
+
+    return text + "..."  # Añade elipsis al final

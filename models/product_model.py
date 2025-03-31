@@ -17,6 +17,7 @@ class WarrantiesMeasures(str, Enum):
   WEEK = "WEEK"
   MONTH = "MONTH"
   YEAR = "YEAR"
+  NONE = ""
 
   def return_description(self):
     _descriptions = {
@@ -31,7 +32,7 @@ class WarrantiesMeasures(str, Enum):
 
 class Warranty(BaseModel):
   has_warranty: bool = Field(default=False)
-  measure: WarrantiesMeasures | None = Field(default=None)
+  measure: WarrantiesMeasures = Field(default=WarrantiesMeasures.NONE)
   quantity: int = Field(default=0)
 
 
@@ -43,7 +44,7 @@ class Product(Entity):
   purchase_price: float = Field(default=0)
   sale_price: float = Field(default=0)
   stock: int = Field(default=0)
-  trend: TrendTypes = TrendTypes.EQUAL
+  trend: TrendTypes = Field(default=TrendTypes.EQUAL)
   graph: List[dict] = Field(default=[])
   warranty: Warranty = Field(default=Warranty())
 

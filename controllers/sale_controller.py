@@ -94,6 +94,19 @@ async def sale_get_by_id(sale_id: str, token: HTTPAuthorizationCredentials = Dep
   return entity.model_dump(by_alias=True)
 
 
+@router.delete(
+    "/sales/{sale_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete sale by id"
+)
+async def sale_delete_by_id(sale_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> str:
+  if not AuthService().is_sales(token):
+    helpers_api.raise_no_authorized()
+  service = SaleService()
+  deleted_id = service.delete_sale_by_id(sale_id)
+  return deleted_id
+
+
 @router.get(
     "/sales/{sale_id}/receipt",
     status_code=status.HTTP_200_OK,

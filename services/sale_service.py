@@ -10,6 +10,7 @@ from repositories.sale_repository import SaleRepository
 from repositories.supplier_repository import SupplierRepository
 from schemas.sale_schema import SaleCreate, SaleQuery, Product, SaleWithDetail
 from services.price_history_service import PriceHistoryService
+from services.product_service import ProductService
 from services.receipt_service import ReceiptService
 from services.sale_detail_service import SaleDetailService
 from services.reports_service import ReportService
@@ -23,6 +24,7 @@ class SaleService():
     self._repo_supplier = SupplierRepository()
     self._service_detail = SaleDetailService()
     self._service_price = PriceHistoryService()
+    self._service_product = ProductService()
     config_repo = ConfigRepository()
     self._config = config_repo.get_one({})
 
@@ -44,6 +46,18 @@ class SaleService():
       helpers_api.raise_error_404('Venta')
     detail = self._repo_detail.get_by_sale_id(id_sale)
     return SaleWithDetail(sale=sale, detail=detail)
+
+  def delete_sale_by_id(self, id_sale: str) -> str:
+    sale = self._repo.get_by_id(id_sale)
+    if not sale:
+      helpers_api.raise_error_404('Venta')
+    details = self._repo_detail.get_by_sale_id(id_sale)
+    for detail in details:
+      self._service_product.increase_stock(detail.product, detail.units)
+      self._repo_detail.delete_by_id(str(detail.id))
+    self._repo.delete_by_id(str(sale.id))
+
+    return id_sale
 
   def get_paged(self, query_params: SaleQuery) -> PagedEntity:
     return self._repo.get_paged(query_params.get_query(), query_params.page, query_params.limit, query_params.sort, query_params.order)

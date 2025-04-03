@@ -93,6 +93,19 @@ async def purchase_get_by_id(purchase_id: str, token: HTTPAuthorizationCredentia
   return entity.model_dump(by_alias=True)
 
 
+@router.delete(
+    "/purchases/{purchase_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete purchase by id"
+)
+async def purchase_delete_by_id(purchase_id: str, token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> str:
+  if not AuthService().is_manager(token):
+    helpers_api.raise_no_authorized()
+  service = PurchaseService()
+  deleted_id = service.delete_purchase_by_id(purchase_id)
+  return deleted_id
+
+
 @router.get(
     "/purchases",
     status_code=status.HTTP_200_OK,

@@ -2,6 +2,7 @@ from typing import List
 from core import helpers_api
 from models.entity import PagedEntity
 from models.product_model import TrendTypes
+from models.purchase_detail_model import PurchaseDetail
 from models.purchase_model import Purchase, Supplier
 from models.price_history_model import PriceChangeType
 from schemas.purchase_schema import PurchaseCreate, PurchaseQuery, Product, PurchaseWithDetail
@@ -12,6 +13,7 @@ from repositories.purchase_repository import PurchaseRepository
 from repositories.supplier_repository import SupplierRepository
 from repositories.purchase_detail_repository import PurchaseDetailRepository
 
+from services.product_service import ProductService
 from services.reports_service import ReportService
 from services.price_history_service import PriceHistoryService
 from services.purchase_detail_service import PurchaseDetailService
@@ -25,6 +27,7 @@ class PurchaseService():
     self._repo_supplier = SupplierRepository()
     self._service_detail = PurchaseDetailService()
     self._service_price = PriceHistoryService()
+    self._service_product = ProductService()
     config_repo = ConfigRepository()
     self._config = config_repo.get_one({})
 
@@ -42,6 +45,22 @@ class PurchaseService():
       helpers_api.raise_error_404('Compra')
     detail = self._repo_detail.get_by_purchase_id(id_purchase)
     return PurchaseWithDetail(purchase=purchase, detail=detail)
+
+  def delete_purchase_by_id(self, id_purchase: str) -> str:
+    purchase = self._repo.get_by_id(id_purchase)
+    if not purchase:
+      helpers_api.raise_error_404('Compra')
+    details = self._repo_detail.get_by_purchase_id(id_purchase)
+    if not self._valid_products_bc_delete(details):
+      helpers_api.raise_error_400(
+          'No hay suficientes productos para eliminar la compra')
+    for detail in details:
+      self._service_product.decrease_stock(detail.product, detail.units)
+      self._repo_detail.delete_by_id(str(detail.id))
+
+    self._repo.delete_by_id(str(purchase.id))
+
+    return id_purchase
 
   def get_paged(self, query_params: PurchaseQuery) -> PagedEntity:
     return self._repo.get_paged(query_params.get_query(), query_params.page, query_params.limit, query_params.sort, query_params.order)
@@ -62,24 +81,29 @@ class PurchaseService():
 
   def _update_products(self, products: List[Product]):
     for product in products:
+      entity = self._repo_products.get_by_id(str(product.id))
+      trend = TrendTypes.EQUAL
+      if product.purchase_price > entity.purchase_price:
+        trend = TrendTypes.UPWARD
+
+      if product.purchase_price < entity.purchase_price:
+        trend = TrendTypes.FALLING
+
       new_values = {
           "$set": {
               "purchase_price": product.purchase_price,
-              "sale_price": product.sale_price
+              "sale_price": product.sale_price,
+              "trend": trend
           },
           "$inc": {
               "stock": product.units
           }
       }
-      entity = self._repo_products.get_by_id_and_update(
+      self._repo_products.get_by_id_and_update(
           product.id, new_values, 'before')
       if entity.purchase_price != product.purchase_price:
         self._service_price.create_history(
             product.id, product.purchase_price, PriceChangeType.PURCHASE)
-        trend = TrendTypes.UPWARD
-        if entity.purchase_price > product.purchase_price:
-          trend = TrendTypes.FALLING
-        self._repo_products.update_trend(product.id, trend)
       if entity.sale_price != product.sale_price:
         self._service_price.create_history(
             product.id, product.sale_price, PriceChangeType.SALE)
@@ -131,3 +155,14 @@ class PurchaseService():
       total_row = {'unity_price': 'Total', 'total_price': total_price}
       details_repo.append(total_row)
       sheets.append({'data': details_repo, 'name': name, 'columns': columns})
+
+  def _valid_products_bc_delete(self, purchaseDetails: List[PurchaseDetail]) -> bool:
+    for detail in purchaseDetails:
+      query = {
+          '_id': detail.product.id,
+          'stock': {'$lt': detail.units}
+      }
+      entity = self._repo_products.get_one(query)
+      if not entity:
+        return False
+    return True

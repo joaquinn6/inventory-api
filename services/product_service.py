@@ -62,6 +62,14 @@ class ProductService():
     ) for product in products], 'name': 'Productos', 'columns': columns}])
     return service.generate_report()
 
+  def increase_stock(self, product: Product, units: int):
+    self._repo.get_by_id_and_update(
+        product.id, {"$inc": {"stock": units}}, 'before')
+
+  def decrease_stock(self, product: Product, units: int):
+    self._repo.get_by_id_and_update(
+        product.id, {"$inc": {"stock": -units}}, 'before')
+
   def get_prices_graph(self, id_product: str) -> dict:
     pipeline = [
         {

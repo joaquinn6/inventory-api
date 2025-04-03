@@ -85,3 +85,15 @@ class RepositoryBase(Generic[T]):
     if not res:
       return None
     return self._mapper(res)
+
+  def find_one_and_upsert(self, query: dict, update: dict,  return_entity: str) -> T | None:
+    return_entity = pymongo.ReturnDocument.BEFORE if return_entity == 'before' else pymongo.ReturnDocument.AFTER
+    res = self._collection.find_one_and_update(
+        query,
+        update,
+        return_document=return_entity,
+        upsert=True
+    )
+    if not res:
+      return None
+    return self._mapper(res)

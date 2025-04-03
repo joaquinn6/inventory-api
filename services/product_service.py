@@ -1,6 +1,8 @@
 from core import helpers_api
+from core.counters import CounterGenerator
 from models.entity import PagedEntity
 from models.product_model import Product
+from repositories.config import ConfigRepository
 from repositories.product_repository import ProductRepository
 from repositories.price_history_repository import PriceHistoryRepository
 from schemas.product_schema import ProductQuery
@@ -11,11 +13,21 @@ class ProductService():
   def __init__(self) -> None:
     self._repo = ProductRepository()
     self._repo_history = PriceHistoryRepository()
+    config_repo = ConfigRepository()
+    self._config = config_repo.get_one({})
 
   def create_product(self, product: Product) -> Product:
-    exist_product = self._repo.exist_by_code(product.code.upper())
-    if exist_product:
-      helpers_api.raise_error_409('Código')
+    if product.code:
+      exist_product = self._repo.exist_by_code(product.code.upper())
+      if exist_product:
+        helpers_api.raise_error_409('Código')
+
+    if not product.code and not self._config.product.auto_code:
+      helpers_api.raise_error_404('Código es requerido')
+    elif not product.code:
+      product.code = CounterGenerator().generate(
+          'PRODUCT', prefix=self._config.product.prefix_code)
+
     product.new()
     self._repo.insert(product)
     return product

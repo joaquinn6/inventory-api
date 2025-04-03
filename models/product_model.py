@@ -38,7 +38,7 @@ class Warranty(BaseModel):
 
 class Product(Entity):
   name: str = Field(...)
-  code: str = Field(...)
+  code: str = Field(default="")
   description: str = Field(default='')
   categories: List[str] = Field(default=[])
   purchase_price: float = Field(default=0)

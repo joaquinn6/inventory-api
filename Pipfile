@@ -12,12 +12,13 @@ pytz = "*"
 pydantic = "*"
 shortuuid = "*"
 python-dateutil = "*"
-python-jose = {extras = ["cryptography"], version = "*"}
+pyjwt = "*"
 python-multipart = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
-pandas = "*"
+bcrypt = "<5"
+pandas = "<3"
 openpyxl = "*"
-fastapi = {extras = ["standard"], version = "*"}
+fastapi = {extras = ["standard-no-fastapi-cloud-cli"], version = "*"}
 fpdf2 = "*"
 
 [dev-packages]

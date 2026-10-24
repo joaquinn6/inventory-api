@@ -4,7 +4,8 @@ from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, Request, status
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 from passlib.context import CryptContext
 
 from core import var_mongo_provider as mongo_provider
@@ -69,7 +70,7 @@ class AuthService():
         self._raise_fail_credentials()
       if self._is_expired(payload['expire']):
         self._raise_token_expired()
-    except JWTError:
+    except PyJWTError:
       self._raise_fail_credentials()
     return payload['extra_data']
 
@@ -115,11 +116,9 @@ class AuthService():
 
 
 class OptionalHTTPBearer(HTTPBearer):
+  def __init__(self, **kwargs) -> None:
+    super().__init__(auto_error=False, **kwargs)
+
   async def __call__(self, request: Request) -> Optional[str]:
-    try:
-      r = await super().__call__(request)
-      token = r.credentials
-    except HTTPException as ex:
-      assert ex.status_code == status.HTTP_403_FORBIDDEN, ex
-      token = None
-    return token
+    r = await super().__call__(request)
+    return r.credentials if r else None

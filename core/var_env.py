@@ -2,7 +2,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(r'.config\.env')
+load_dotenv('.config/.env')
 
 DATABASE = os.getenv('DB_NAME')
 MONGO_URI = os.getenv('MONGO_URI')

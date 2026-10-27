@@ -20,8 +20,12 @@ class UserService():
     self._repo.insert(user)
     return UserInfo.from_dict(user.model_dump(by_alias=True))
 
-  def get_paged(self, query_params: UserQuery) -> PagedEntity:
-    return self._repo.get_paged(query_params.get_query(), query_params.page, query_params.limit, query_params.sort, query_params.order)
+  def get_paged(self, query_params: UserQuery) -> PagedEntity[UserInfo]:
+    paged = self._repo.get_paged(query_params.get_query(), query_params.page,
+                                 query_params.limit, query_params.sort, query_params.order)
+    items = [UserInfo.from_dict(user.model_dump(by_alias=True))
+             for user in paged.items]
+    return PagedEntity[UserInfo](total=paged.total, items=items)
 
   def update_user(self, exist: User, update: User) -> UserInfo:
     exist.update(update)

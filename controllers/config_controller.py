@@ -24,7 +24,7 @@ router = APIRouter(
     summary="Get config"
 )
 async def get_config(token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Config:
-  if not AuthService().is_manager(token):
+  if not AuthService().is_sales(token):
     helpers_api.raise_no_authorized()
   repo = ConfigRepository()
   entity = repo.get_one({})
@@ -41,7 +41,7 @@ async def get_config(token: HTTPAuthorizationCredentials = Depends(auth_scheme))
 async def config_update(
         config: Config = Body(...),
         token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Config:
-  if not AuthService().is_sales(token):
+  if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
   repo = ConfigRepository()
   entity = repo.get_one({})
@@ -61,7 +61,7 @@ async def config_update(
 async def config_create(
         config: Config = Body(...),
         token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> Config:
-  if not AuthService().is_manager(token):
+  if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
 
   service = ConfigService(mongo_provider.db)
@@ -75,7 +75,7 @@ async def config_create(
     summary="Create a backup of the database"
 )
 async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> StreamingResponse:
-  if not AuthService().is_manager(token):
+  if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
   service = ConfigService(mongo_provider.db)
   backup_file = service.create_backup()
@@ -98,7 +98,7 @@ async def backup_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
     summary="Create a backup of the database"
 )
 async def restore_post(token: HTTPAuthorizationCredentials = Depends(auth_scheme), file: UploadFile = File(...)):
-  if not AuthService().is_manager(token):
+  if not AuthService().is_admin(token):
     helpers_api.raise_no_authorized()
 
   zip_file = BytesIO(await file.read())

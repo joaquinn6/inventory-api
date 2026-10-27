@@ -119,12 +119,12 @@ async def user_update_by_id(
     status_code=status.HTTP_200_OK,
     summary="Get users"
 )
-async def get_users(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PagedEntity:
+async def get_users(query_params: UserQuery = Query(...), token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> PagedEntity[UserInfo]:
   if not AuthService().is_manager(token):
     helpers_api.raise_no_authorized()
   service = UserService()
-  suppliers = service.get_paged(query_params)
-  return suppliers.model_dump(by_alias=True)
+  users = service.get_paged(query_params)
+  return users.model_dump(by_alias=True)
 
 
 @router.post(

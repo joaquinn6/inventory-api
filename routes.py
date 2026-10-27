@@ -8,7 +8,9 @@ from controllers import supplier_controller
 from controllers import purchase_controller
 from controllers import sale_controller
 from controllers import dashboard_controller
+from controllers import awake_controller
 router = APIRouter()
+router.include_router(awake_controller.router)
 router.include_router(config_controller.router)
 router.include_router(users_controller.router)
 router.include_router(product_controller.router)
